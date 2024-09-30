@@ -63,10 +63,10 @@ class _SignInEmailState extends State<SignInEmail> {
 
     var url;
     if (selectedValue == 'PROVIDER'){
-      url = Uri.parse('http://192.168.6.55:8080/api/v1/provider/login');
+      url = Uri.parse('http://192.168.6.53:8080/api/v1/provider/login');
       print(url);
     }else if (selectedValue == 'FINDER'){
-      url  = Uri.parse('http://192.168.6.55:8080/api/v1/finder/login');
+      url  = Uri.parse('http://192.168.6.53:8080/api/v1/finder/login');
       print(url);
     }
 
@@ -98,15 +98,22 @@ class _SignInEmailState extends State<SignInEmail> {
 
       // Extract the authorization token
       String authorizationToken = responseBody['authorization'];
+      String userId = responseBody['profile'];
 
-      print(authorizationToken);
+      // print(authorizationToken);
 
       final SharedPreferences prefs = await SharedPreferences.getInstance();
 
       await prefs.setString('userToken', authorizationToken);
+      await prefs.setString('userId', userId);
 
       print('Log In Success');
-      Navigator.pushReplacementNamed(context, homePage);
+
+      if (selectedValue == 'PROVIDER' && responseBody['first_time_login']){
+        Navigator.pushReplacementNamed(context, addService);
+      }else{
+        Navigator.pushReplacementNamed(context, homePage);
+      }
     }
   }
 

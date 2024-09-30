@@ -8,7 +8,6 @@ import 'package:saidika_ui/utils/route.dart';
 import 'package:saidika_ui/utils/service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 

@@ -8,6 +8,7 @@ class AppTextField extends StatelessWidget {
   IconData prefixIcon;
   VoidCallback? textFieldCallBack;
   bool? isPasswordField, isEnabled, autoFocus;
+  Function(String)? onChanged;
   FocusNode focusNode;
   TextInputType? keyboardType;
   TextEditingController controller;
@@ -19,6 +20,7 @@ class AppTextField extends StatelessWidget {
     required this.focusNode,
     required this.controller,
     this.isPasswordField,
+    this.onChanged,
     this.textFieldCallBack,
     this.keyboardType,
     this.isEnabled,
@@ -35,6 +37,7 @@ class AppTextField extends StatelessWidget {
           controller: controller,
           style: appTextTheme(context).labelSmall,
           onTap: textFieldCallBack,
+          onChanged: onChanged,
           obscureText: isPasswordField ?? false,
           focusNode: focusNode,
           keyboardType: keyboardType ?? TextInputType.text,
@@ -120,6 +123,69 @@ class AppTextFieldWithSuffixIcon extends StatelessWidget {
     );
   }
 }
+
+class AppTextArea extends StatelessWidget {
+  String hintText;
+  IconData prefixIcon;
+  TextEditingController controller;
+  FocusNode focusNode;
+  bool? isEnabled, autoFocus;
+  Function(String)? onChanged;
+  VoidCallback? onTap;
+
+  AppTextArea({
+    Key? key,
+    required this.hintText,
+    required this.controller,
+    required this.focusNode,
+    required this.prefixIcon,
+    this.isEnabled,
+    this.autoFocus,
+    this.onChanged,
+    this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsetsDirectional.only(bottom: 20),
+      child: TextField(
+        enabled: isEnabled ?? true,
+        autofocus: autoFocus ?? false,
+        controller: controller,
+        focusNode: focusNode,
+        onTap: onTap,
+        onChanged: onChanged,
+        maxLines: null,  // This allows the TextField to behave like a textarea
+        keyboardType: TextInputType.multiline,
+        style: appTextTheme(context).labelMedium,
+        decoration: InputDecoration(
+          hintText: hintText,
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: AppColors.primaryColor),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: AppColors.textColorLight),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          prefixIcon: Icon(prefixIcon,
+              color: focusNode.hasFocus
+                  ? AppColors.primaryColor
+                  : AppColors.textColorLight,
+              size: 25),
+          disabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.grey),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          filled: true,
+          fillColor: Colors.white,  // Set background color to white (or any other neutral color)
+        ),
+      ),
+    );
+  }
+}
+
 
 focusedOutlineInputBorder() {
   return OutlineInputBorder(

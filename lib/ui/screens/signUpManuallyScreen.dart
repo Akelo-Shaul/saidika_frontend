@@ -74,10 +74,10 @@ class _SignUpManuallyScreenState extends State<SignUpManuallyScreen> {
 
     var url;
     if (selectedValue == 'PROVIDER'){
-      url = Uri.parse('http://192.168.6.55:8080/api/v1/provider/register');
+      url = Uri.parse('http://192.168.6.53:8080/api/v1/provider/register');
       print(url);
     }else if (selectedValue == 'FINDER'){
-      url = Uri.parse('http://192.168.6.55:8080/api/v1/finder/register');
+      url = Uri.parse('http://192.168.6.53:8080/api/v1/finder/register');
       print(url);
     }
 
@@ -116,7 +116,13 @@ class _SignUpManuallyScreenState extends State<SignUpManuallyScreen> {
       // print(cookie);
       // print('Message: ${responseBody}');
       print('Account created successfully');
-      Navigator.pushReplacementNamed(context, signInEmail);
+
+      if (selectedValue == 'PROVIDER'){
+        Navigator.pushReplacementNamed(context, addService);
+      }else if (selectedValue == 'FINDER'){
+        Navigator.pushReplacementNamed(context, signInEmail);
+      }
+
     }
 
     try {

@@ -1,7 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:saidika_ui/ui/theme/colors.dart';
 import 'package:saidika_ui/ui/widgets/bottomNavigation.dart';
 import 'package:saidika_ui/ui/widgets/imageAsset.dart';
+import 'package:saidika_ui/utils/DesignConfig.dart';
 import 'package:saidika_ui/utils/StringsRes.dart';
+import 'package:saidika_ui/utils/constants.dart';
 import 'package:saidika_ui/utils/route.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -59,9 +65,20 @@ class _ProfileState extends State<Profile> {
     return "Hello";
   }
 
+  void logout() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('userToken'); // Clear the session token
+    await prefs.remove('userId'); // Clear the session token
+
+    Navigator.pushNamed(context, signInScreen);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer:Drawer(
+        child: drawerData(),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(10, 5, 10, 0),
@@ -73,9 +90,16 @@ class _ProfileState extends State<Profile> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(left: 10),
-                    child: Icon(
-                      Icons.settings,
-                      size: 30,
+                    child: Builder(
+                      builder: (context) => GestureDetector(
+                        onTap: () {
+                          Scaffold.of(context).openDrawer(); // Opens the drawer correctly
+                        },
+                        child: Icon(
+                          Icons.settings,
+                          size: 30,
+                        ),
+                      ),
                     ),
                   ),
                   Container(
@@ -262,6 +286,155 @@ class _ProfileState extends State<Profile> {
       default:
         return Text('Lorem ipsum dolor sit amet.');
     }
+  }
+
+
+  Widget drawerData() {
+    var width = MediaQuery.of(context).size.width / 8;
+    return Column(
+      children: [
+        Container(
+          // decoration: BoxDecoration(
+          //   gradient: DesignConfig.gradient,
+          // ),
+          padding: const EdgeInsets.only(top: 50, bottom: 15,left: 15),
+          margin: const EdgeInsets.only(bottom: 10),
+          child: Row(
+            children: [
+              if (Platform.isIOS) BackButton(color: Colors.white),
+              Container(
+                width: 85,
+                height: 85,
+                padding: const EdgeInsets.all(4.0),
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.all(Radius.circular(45.0)),
+                  border: Border.all(
+                    color: AppColors.primaryColor,
+                    width: 2,
+                  ),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(100),
+                  child: imageAsset(
+                    isNormalImage: true,
+                    fileName: 'profile.jpg',
+                    imgHeight: 130,
+                    imgWidth: 130,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'My Name',
+                      style: appTextTheme(context).labelMedium
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: ListView(
+            children: <Widget>[
+              ListTile(
+                leading: SvgPicture.asset(
+                  "${imagePath}drhome.svg",
+                  height: MediaQuery.of(context).size.width / 14,
+                ),
+                title: Text(
+                  'Edit Profile',
+                  style: appTextTheme(context).labelMedium,
+                ),
+                subtitle: Divider(
+                  color: AppColors.primaryApp,
+                  endIndent: 40,
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  // Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileActivity(data: data,)));
+                },
+              ),
+              ListTile(
+                leading: SvgPicture.asset(
+                  "${imagePath}addservice.svg",
+                  height: MediaQuery.of(context).size.width / 14,
+                ),
+                title: Text(
+                  'Add Service',
+                  style: appTextTheme(context).labelMedium,
+                ),
+                subtitle: Divider(
+                  color: AppColors.primaryApp,
+                  endIndent: 40,
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  // Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileActivity(data: data,)));
+                },
+              ),
+              ListTile(
+                leading: SvgPicture.asset(
+                  "assets/images/logout.svg",
+                  height: MediaQuery.of(context).size.width / 14,
+                ),
+                title: Text('Logout',
+                  style: appTextTheme(context).labelMedium),
+                subtitle: Divider(
+                  color: AppColors.primaryApp,
+                  endIndent: 40,
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  //Constant.session.logoutUser(context);
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        shape: DesignConfig.roundedrectangleshape,
+                        title: Text(
+                          StringsRes.logout,
+                          style: appTextTheme(context).labelMedium?.copyWith(color: AppColors.primaryColor),
+                        ),
+                        content: Text(
+                          StringsRes.logoutconfirm,
+                          style: appTextTheme(context).labelSmall,
+                        ),
+                        actions: [
+                          TextButton(
+                            child: Text(
+                              StringsRes.cancel,
+                              style: appTextTheme(context).labelMedium,
+                            ),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                          TextButton(
+                            child: Text(
+                              StringsRes.logout,
+                              style: appTextTheme(context).labelMedium?.copyWith(color: Colors.red),
+                            ),
+                            onPressed: () {
+                              logout();
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
 }

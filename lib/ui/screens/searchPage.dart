@@ -1,18 +1,14 @@
 import 'dart:convert';
-
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:saidika_ui/ui/theme/colors.dart';
 import 'package:saidika_ui/ui/widgets/appTextField.dart';
 import 'package:saidika_ui/ui/widgets/bottomNavigation.dart';
 import 'package:saidika_ui/ui/widgets/imageAsset.dart';
 import 'package:saidika_ui/utils/StringsRes.dart';
 import 'package:saidika_ui/utils/route.dart';
-import 'package:saidika_ui/utils/service_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
-List<FocusNode> focusNodes = [
-  FocusNode(),
-];
 
 class Search extends StatefulWidget {
   final String data;
@@ -22,26 +18,70 @@ class Search extends StatefulWidget {
   State<Search> createState() => _SearchState();
 }
 
+List<FocusNode> focusNodes = [
+  FocusNode(),
+];
+
 class _SearchState extends State<Search> {
+  int _selectedIndex = 1; // Assuming Search is at index 1
+  List providers = [];
+  List filteredServiceProvider = [];
+  List<String> categories = ['Plumbing', 'Electrical', 'Mechanic', 'Cobler', 'Artist'];
+  String? searchLocation;
+  String? selectedCategory;
+  final TextEditingController searchInputController = TextEditingController();
 
+  // Fetch service providers from API
+  Future<void> getServiceProviders() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var url = Uri.parse('http://192.168.6.53:8080/api/v1/services/filter_by_location/$searchLocation');
 
-  // String? serviceName;
+    var response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": prefs.getString('userToken').toString(),
+      },
+    );
 
-  //Handling navigation between pages
-  int _selectedIndex = 1; // Assuming Search is at index 1, adjust if needed
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      var responseBody = jsonDecode(response.body);
+      setState(() {
+        providers = responseBody;
+        // Filter providers based on the selected category after fetching data
+        filterByCategory(selectedCategory ?? ''); // Ensure the filtering applies
+      });
+    }
+  }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final serviceName = widget.data;
+    if (serviceName.isNotEmpty && serviceName != 'null') {
+      setState(() {
+        selectedCategory = serviceName;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    searchLocation = StringsRes.locationDefault; // Default location
+    getServiceProviders();
+  }
+
+  // Handle bottom navigation
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
-
-      //Handling navigation to different pages
       switch (index) {
         case 0:
           Navigator.pushReplacementNamed(context, homePage);
           break;
         case 1:
-        // Current page
-          break;
+          break; // Current page
         case 2:
           Navigator.pushReplacementNamed(context, chats);
           break;
@@ -52,138 +92,63 @@ class _SearchState extends State<Search> {
     });
   }
 
-  //List of service providers
-  // List<ServiceProvider> serviceProviders = [
-  //   ServiceProvider(name: 'Shaul Akelo', location: 'Malaba', ratings: 9.7, service: 'Plumbing', imageUrl: 'assets/avatar.jpg'),
-  //   ServiceProvider(name: 'Andy Woody', location: 'Kilgoris', ratings: 7.3, service: 'Electrical', imageUrl: 'assets/avatar.jpg'),
-  //   ServiceProvider(name: 'Jon Doe', location: 'Nairobi', ratings: 8.7, service: 'Cobler', imageUrl: 'assets/avatar.jpg'),
-  //   ServiceProvider(name: 'Burmer C', location: 'Kakamega', ratings: 5.4, service: 'Mechanic', imageUrl: 'assets/avatar.jpg')
-  // ];
-
-  List providers = [];
-
-  //List of categories
-  List<String> categories =['Plumbing', 'Electrical', 'Mechanic', 'Cobler','Artist'];
-
-  List filteredServiceProvider = [];
-
-  String? searchLocation;
-
-  String? selectedCategory;
-
-  final TextEditingController searchInputController = TextEditingController();
-
-  // Future<Map<String, dynamic>> getServiceProviders() async{
-  Future<String> getServiceProviders() async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    var url = Uri.parse('http://192.168.6.55:8080/api/v1/services/filter_by_location/$searchLocation');
-
-    print(url);
-
-    var response = await http.get(
-      url,
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": prefs.getString('userToken').toString()
-      }// Encode the data as JSON
-    );
-
-    print(response.body);
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      var responseBody = jsonDecode(response.body);
-      providers = responseBody;
-      // print(responseBody['name']);
-      for (var provider in providers) {
-        print("THe name ${provider['name']}");
-        print("THe description ${provider['description']}");
-        print("THe location ${provider['availableLocation']}");
-        print("THe firstName ${provider['provider']['first_name']}");
-        print("THe lastName ${provider['provider']['last_name']}");
-      }
-      // print(responseBody['name'].toString());
-      // print(responseBody['description'].toString());
-      // print(responseBody['availableLocation'].toString());
-      // print(responseBody['provider'].first_name.toString());
-    }
-
-    return "Hello";
-  }
-
-  @override
-  void didChangeDependencies() {
-    // TODO: implement didChangeDependencies
-    super.didChangeDependencies();
-    final serviceName = widget.data;
-    if (serviceName.isNotEmpty && serviceName != 'null') {
-      // Use the arguments
-      selectedCategory = serviceName;
-      print('Received argument: $serviceName');
-      filteredServiceProvider = providers.where((provider) => provider['name'] == serviceName).toList();
-    } else {
-      // Handle case where no argument is passed
-      print('No arguments received');
-      filteredServiceProvider = providers; // Default to all providers
-    }
-  }
-
-  void onFocusChanged(){
-    setState(() {
-
-    });
-  }
-
+  // Refresh all data
   Future<void> _refreshAllData() async {
     setState(() {
       filteredServiceProvider = providers;
       searchInputController.clear();
       selectedCategory = null;
     });
+    await getServiceProviders(); // Fetch fresh data when refreshing
   }
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    getServiceProviders();
-    filteredServiceProvider = providers;
+  // Filter providers by category
+  void filterByCategory(String category) {
+    setState(() {
+      selectedCategory = category;
+      if (category.isNotEmpty) {
+        filteredServiceProvider = providers.where((provider) => provider['name'] == category).toList();
+      } else {
+        filteredServiceProvider = providers; // Show all if no category is selected
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (searchLocation == null || searchLocation!.isEmpty) {
-      searchLocation = StringsRes.locationDefault;
-    }
-
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
-            // Custom AppBar-like widget
+            // Search field
             Container(
               padding: EdgeInsets.all(10),
               child: Row(
                 children: [
                   Expanded(
                     child: AppTextField(
-                      textFieldCallBack: onFocusChanged,
                       hintText: 'Search...',
                       prefixIcon: Icons.search,
-                      controller: searchInputController,
                       focusNode: focusNodes[0],
-                      keyboardType: TextInputType.text,
+                      controller: searchInputController,
+                      // Filter list while typing
+                      onChanged: (value) {
+                        print("Text changed: $value");
+                        // Implement your filtering logic here
+                      }
                     ),
                   ),
                 ],
               ),
             ),
             SizedBox(height: 10),
-            Expanded( // Use Expanded to take up the remaining space
+            Expanded(
               child: RefreshIndicator(
                 onRefresh: _refreshAllData,
                 child: ListView(
-                  padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                  padding: EdgeInsets.symmetric(horizontal: 10),
                   children: [
+                    // Services and location header
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -192,21 +157,18 @@ class _SearchState extends State<Search> {
                           style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                         ),
                         GestureDetector(
-                          onTap: () {
-                            final result = Navigator.pushNamed(context, setLocation);
+                          onTap: () async {
+                            final result = await Navigator.pushNamed(context, setLocation);
                             if (result != null) {
                               setState(() {
-                                print(result);
-                                // Handle location selection and filtering
+                                searchLocation = result.toString();
+                                getServiceProviders(); // Fetch filtered data by location
                               });
                             }
                           },
                           child: Row(
                             children: [
-                              Text(
-                                searchLocation!,
-                                style: TextStyle(fontSize: 16),
-                              ),
+                              Text(searchLocation!, style: TextStyle(fontSize: 16)),
                               SizedBox(width: 5),
                               Icon(Icons.tune, size: 20),
                               SizedBox(width: 5),
@@ -217,23 +179,18 @@ class _SearchState extends State<Search> {
                       ],
                     ),
                     SizedBox(height: 7),
+                    // Categories list
                     SizedBox(
                       height: 32,
                       child: ListView.builder(
-                        padding: EdgeInsets.zero,
                         scrollDirection: Axis.horizontal,
                         itemCount: categories.length,
                         itemBuilder: (context, index) {
                           final category = categories[index];
                           return GestureDetector(
-                            onTap: () {
-                              selectedCategory = category;
-                              setState(() {
-                                filteredServiceProvider = providers.where((provider) => provider['name'] == category).toList();
-                              });
-                            },
+                            onTap: () => filterByCategory(category),
                             child: Padding(
-                              padding: EdgeInsets.fromLTRB(index == 0 ? 0 : 2, 0, 2, 0),
+                              padding: EdgeInsets.symmetric(horizontal: 2),
                               child: Container(
                                 height: 32,
                                 width: 90,
@@ -250,14 +207,15 @@ class _SearchState extends State<Search> {
                       ),
                     ),
                     SizedBox(height: 15),
+                    // Providers list
                     ListView.builder(
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
-                      itemCount: providers.length,
+                      itemCount: filteredServiceProvider.length,
                       itemBuilder: (context, index) {
-                        final provider = providers[index];
+                        final provider = filteredServiceProvider[index];
                         return Padding(
-                          padding: EdgeInsets.fromLTRB(0, index == 0 ? 0 : 5, 0, 5),
+                          padding: EdgeInsets.symmetric(vertical: 5),
                           child: Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(10),
@@ -284,12 +242,9 @@ class _SearchState extends State<Search> {
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Padding(
-                                              padding: EdgeInsets.fromLTRB(3, 0, 0, 0),
-                                              child: Text(
-                                                '${provider['provider']['first_name']} ${provider['provider']['last_name']}',
-                                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: .5),
-                                              ),
+                                            Text(
+                                              '${provider['provider']['first_name']} ${provider['provider']['last_name']}',
+                                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                                             ),
                                             Row(
                                               children: [
@@ -297,13 +252,10 @@ class _SearchState extends State<Search> {
                                                 Text(provider['availableLocation'], style: TextStyle(fontSize: 12)),
                                                 SizedBox(width: 8),
                                                 Icon(Icons.star, size: 13),
-                                                Text(provider['availableLocation'], style: TextStyle(fontSize: 12)),
+                                                Text(provider['average_rating'].toString(), style: TextStyle(fontSize: 12)),
                                               ],
                                             ),
-                                            Padding(
-                                              padding: EdgeInsets.fromLTRB(3, 0, 0, 0),
-                                              child: Text(provider['name'], style: TextStyle(fontSize: 13)),
-                                            ),
+                                            Text(provider['name'], style: TextStyle(fontSize: 13)),
                                           ],
                                         ),
                                       )
@@ -313,7 +265,14 @@ class _SearchState extends State<Search> {
                                     children: [
                                       GestureDetector(
                                         onTap: () {
-                                          Navigator.pushNamed(context, '/chat_page');
+                                          Navigator.pushNamed(
+                                            context,
+                                            chat_page,
+                                            arguments: {
+                                              'receiverName': provider['provider']['first_name'].toString(),
+                                              'receiverId': provider['provider']['id'].toString()
+                                            },
+                                          );
                                         },
                                         child: Icon(Icons.message, color: Colors.grey, size: 30),
                                       ),

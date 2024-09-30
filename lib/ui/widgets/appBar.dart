@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:saidika_ui/utils/constants.dart';
 
-AppBar appBar(BuildContext context, String title) {
+AppBar appBar(BuildContext context, String title, {TextStyle? titleStyle}) {
   return AppBar(
     elevation: 0,
     backgroundColor: Colors.transparent,
@@ -16,7 +16,7 @@ AppBar appBar(BuildContext context, String title) {
     ),
     title: Text(
       title,
-      style: appTextTheme(context).labelSmall,
+      style: titleStyle ?? appTextTheme(context).labelSmall,
     ),
   );
 }

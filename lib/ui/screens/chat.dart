@@ -30,7 +30,7 @@ class _ChatState extends State<Chat> {
 
           break;
         case 3:
-          Navigator.pushReplacementNamed(context, '/profile');
+          Navigator.pushReplacementNamed(context, profile);
           break;
       }
     });
@@ -98,7 +98,14 @@ class _ChatState extends State<Chat> {
 
                   return GestureDetector(
                     onTap: (){
-                      Navigator.pushNamed(context, chat_page);
+                      Navigator.pushNamed(
+                        context,
+                        chat_page,
+                        arguments: {
+                          'receiverName': 'Derozen', // Replace with actual receiver name
+                          'receiverId': 'Namya Biz' // Replace with actual receiver ID
+                        },
+                      );
                       // setState(() {});
                     },
                     child: Padding(

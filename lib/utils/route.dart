@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:saidika_ui/ui/screens/SplashScreen.dart';
+import 'package:saidika_ui/ui/screens/addService.dart';
 import 'package:saidika_ui/ui/screens/chat.dart';
 import 'package:saidika_ui/ui/screens/chatPage.dart';
 import 'package:saidika_ui/ui/screens/homePage.dart';
@@ -24,6 +25,7 @@ const String search = '/search';
 const String chats = '/chats';
 const String profile = '/profile';
 const String chat_page = '/chat_page';
+const String addService = '/addService';
 
 class RouteGenerator{
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -50,9 +52,15 @@ class RouteGenerator{
       case chats:
         return MaterialPageRoute(builder: (_) => Chat());
       case chat_page:
-        return MaterialPageRoute(builder: (_) => ChatPage());
+        final args = settings.arguments as Map<String, String>;
+        return MaterialPageRoute(builder: (_) => ChatPage(
+          receiverName: args['receiverName']!,
+          receiverId: args['receiverId']!,
+        ));
       case profile:
         return MaterialPageRoute(builder: (_) => Profile());
+      case addService:
+        return MaterialPageRoute(builder: (_) => AddService());
       default:
         return _errorRoute();
     }

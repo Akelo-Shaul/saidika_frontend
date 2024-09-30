@@ -1,4 +1,6 @@
 
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -6,9 +8,19 @@ import 'package:saidika_ui/ui/widgets/appBar.dart';
 import 'package:saidika_ui/ui/widgets/imageAsset.dart';
 import 'package:saidika_ui/utils/constants.dart';
 import 'package:saidika_ui/utils/messages.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+
+List<FocusNode> focusNodes = [
+  FocusNode(),
+];
 
 class ChatPage extends StatefulWidget {
-  const ChatPage({super.key});
+
+  final String receiverName;
+  final String receiverId;
+
+  const ChatPage({super.key, required  this.receiverName, required this.receiverId});
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -16,7 +28,8 @@ class ChatPage extends StatefulWidget {
 
 
 class _ChatPageState extends State<ChatPage> {
-  String? messangeTitle = 'Shaul';
+  String? receiverTitle;
+  String? chatReceiverId;
 
   final TextEditingController messageController = TextEditingController();
 
@@ -28,6 +41,33 @@ class _ChatPageState extends State<ChatPage> {
     Messages(message: 'I saw a monkey', time: DateTime.now().subtract(Duration(minutes: 20)), isDelivered: true, isRead: true, isSentByMe: false),
     Messages(message: 'Jeez I have to make this long to ensure that the space used is as reliable as termed so lets see if this is any good', time: DateTime.now().subtract(Duration(minutes: 3)), isDelivered: true, isRead: true, isSentByMe: false),
   ];
+
+  Future<void> addChat() async{
+    print("Add chat function called");
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    var url = Uri.parse('http://192.168.6.53:8080/api/v1/messages/${prefs.getString('userId')}/${chatReceiverId}');
+    print(url);
+
+    Map<String, dynamic> message = {
+      "text": messageController.text,
+    };
+
+    print("Message object: $message");
+
+    var response = await http.post(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": prefs.getString('userToken').toString()
+        },
+        body: json.encode(message)
+    );
+
+    print(response.body);
+
+    messageController.clear();
+  }
 
 
   @override
@@ -50,10 +90,16 @@ class _ChatPageState extends State<ChatPage> {
       ),
     ];
 
+    @override
+    void dispose() {
+      messageController.dispose();
+      super.dispose();
+    }
+
     return Scaffold(
       appBar: appBarWithActions(
           context,
-          messangeTitle!,
+          receiverTitle!,
           appBarActions,
         titleStyle: appTextTheme(context).labelMedium?.copyWith(fontWeight: FontWeight.bold)
       ),
@@ -70,7 +116,7 @@ class _ChatPageState extends State<ChatPage> {
               ),
             ),
           ),
-          _buildMessageInputField(this.context),
+          _buildMessageInputField(this.context,this.messageController, addChat),
         ],
       ),
     );
@@ -81,6 +127,10 @@ class _ChatPageState extends State<ChatPage> {
   void initState() {
     super.initState();
     sortMessagesByTime();
+    setState(() {
+      chatReceiverId = widget.receiverId;
+      receiverTitle = widget.receiverName;
+    });
   }
 
   void sortMessagesByTime() {
@@ -170,24 +220,18 @@ Widget _buildMessageBubble(BuildContext context, Messages message) {
   );
 }
 
-Widget _buildMessageInputField(BuildContext context) {
-  final TextEditingController messageController = TextEditingController();
+Widget _buildMessageInputField(BuildContext context, TextEditingController messageController, Future<void> Function() addChat) {
 
   void sendMessage() {
+    print("Send button pressed"); // Add this line
     if (messageController.text.isNotEmpty) {
-      print(messageController.text);
-      // setState(() {
-      //   messages.add(Messages(
-      //     message: messageController.text,
-      //     isSentByMe: true,
-      //     isDelivered: true,
-      //     isRead: false,
-      //     time: DateTime.now(),
-      //   ));
-        messageController.clear(); // Clear the input field after sending
-      // });
+      print("Message: ${messageController.text}"); // Check the message content
+      addChat();
+    } else {
+      print("Message is empty!"); // Check if the message is empty
     }
   }
+
 
   return Container(
     width: double.infinity, // Ensure the Container takes up the full width
@@ -214,6 +258,8 @@ Widget _buildMessageInputField(BuildContext context) {
                 padding: const EdgeInsets.fromLTRB(2, 0, 2, 0),
                 child: TextField(
                   controller: messageController,
+                  focusNode: focusNodes[0],
+                  keyboardType: TextInputType.text,
                   decoration: InputDecoration(
                     hintText: 'Message',
                     border: InputBorder.none,
