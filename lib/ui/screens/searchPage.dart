@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:saidika_ui/ui/theme/colors.dart';
 import 'package:saidika_ui/ui/widgets/appTextField.dart';
 import 'package:saidika_ui/ui/widgets/bottomNavigation.dart';
@@ -9,6 +10,7 @@ import 'package:saidika_ui/utils/StringsRes.dart';
 import 'package:saidika_ui/utils/route.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Search extends StatefulWidget {
   final String data;
@@ -31,16 +33,23 @@ class _SearchState extends State<Search> {
   String? selectedCategory;
   final TextEditingController searchInputController = TextEditingController();
 
+  Future<SharedPreferences> prefs =SharedPreferences.getInstance();
+
   // Fetch service providers from API
   Future<void> getServiceProviders() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    var url = Uri.parse('http://192.168.6.53:8080/api/v1/services/filter_by_location/$searchLocation');
+    var url = Uri.parse('http://192.168.6.16:8080/api/v1/services/filter_by_location/$searchLocation');
+
+    final SharedPreferences sharedPreferences = await prefs;
+
+    // Fetch the userToken from SharedPreferences
+    String? userToken = sharedPreferences.getString('userToken');
+
 
     var response = await http.get(
       url,
       headers: {
         "Content-Type": "application/json",
-        "Authorization": prefs.getString('userToken').toString(),
+        "Authorization": '$userToken',
       },
     );
 
@@ -264,20 +273,35 @@ class _SearchState extends State<Search> {
                                   Row(
                                     children: [
                                       GestureDetector(
-                                        onTap: () {
+                                        onTap: () async {
+                                          final SharedPreferences sharedPreferences = await prefs;
+                                          String? senderId = sharedPreferences.getString('userId');
                                           Navigator.pushNamed(
                                             context,
                                             chat_page,
                                             arguments: {
                                               'receiverName': provider['provider']['first_name'].toString(),
-                                              'receiverId': provider['provider']['id'].toString()
+                                              'receiverId': provider['provider']['id'].toString(),
+                                              'senderId': '$senderId',
+                                              'chatId': 'chatId'
                                             },
                                           );
                                         },
                                         child: Icon(Icons.message, color: Colors.grey, size: 30),
                                       ),
                                       SizedBox(width: 8),
-                                      Icon(Icons.add_ic_call_rounded, color: Colors.grey, size: 30),
+                                      GestureDetector(
+                                        child: Icon(Icons.add_ic_call_rounded, color: Colors.grey, size: 30),
+                                        onTap: () async {
+                                          String providerPhone = '${provider['provider']['phone_number']}';
+                                          print(providerPhone);
+                                          Uri phoneUrl = Uri(scheme: 'tel', path: '0115089122');
+                                          if (await canLaunchUrl(phoneUrl)) {
+                                            await launchUrl(phoneUrl);
+                                          }
+                                        },
+
+                                      ),
                                     ],
                                   ),
                                 ],

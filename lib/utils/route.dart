@@ -3,6 +3,7 @@ import 'package:saidika_ui/ui/screens/SplashScreen.dart';
 import 'package:saidika_ui/ui/screens/addService.dart';
 import 'package:saidika_ui/ui/screens/chat.dart';
 import 'package:saidika_ui/ui/screens/chatPage.dart';
+import 'package:saidika_ui/ui/screens/editProfile.dart';
 import 'package:saidika_ui/ui/screens/homePage.dart';
 import 'package:saidika_ui/ui/screens/introSliderScreen.dart';
 import 'package:saidika_ui/ui/screens/profilePage.dart';
@@ -26,6 +27,7 @@ const String chats = '/chats';
 const String profile = '/profile';
 const String chat_page = '/chat_page';
 const String addService = '/addService';
+const String editProfile = '/editProfile';
 
 class RouteGenerator{
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -56,11 +58,15 @@ class RouteGenerator{
         return MaterialPageRoute(builder: (_) => ChatPage(
           receiverName: args['receiverName']!,
           receiverId: args['receiverId']!,
+          senderId: args['senderId']!,
+          chatId: args['chatId']!,
         ));
       case profile:
         return MaterialPageRoute(builder: (_) => Profile());
       case addService:
         return MaterialPageRoute(builder: (_) => AddService());
+      case editProfile:
+        return MaterialPageRoute(builder: (_) => EditProfile());
       default:
         return _errorRoute();
     }

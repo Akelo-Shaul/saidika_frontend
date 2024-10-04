@@ -19,8 +19,10 @@ class ChatPage extends StatefulWidget {
 
   final String receiverName;
   final String receiverId;
+  final String senderId;
+  final String chatId;
 
-  const ChatPage({super.key, required  this.receiverName, required this.receiverId});
+  const ChatPage({super.key, required this.receiverName, required this.receiverId, required this.senderId, required this.chatId});
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -30,6 +32,7 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   String? receiverTitle;
   String? chatReceiverId;
+  String? chatId;
 
   final TextEditingController messageController = TextEditingController();
 
@@ -42,11 +45,16 @@ class _ChatPageState extends State<ChatPage> {
     Messages(message: 'Jeez I have to make this long to ensure that the space used is as reliable as termed so lets see if this is any good', time: DateTime.now().subtract(Duration(minutes: 3)), isDelivered: true, isRead: true, isSentByMe: false),
   ];
 
+  Future<SharedPreferences> prefs = SharedPreferences.getInstance();
+
   Future<void> addChat() async{
     print("Add chat function called");
-    SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    var url = Uri.parse('http://192.168.6.53:8080/api/v1/messages/${prefs.getString('userId')}/${chatReceiverId}');
+    final SharedPreferences sharedPreferences = await prefs;
+    String? userToken = sharedPreferences.getString('userToken');
+    String? userId = sharedPreferences.getString('userId');
+
+    var url = Uri.parse('http://192.168.6.16:8080/api/v1/messages/$userId/${chatReceiverId}');
     print(url);
 
     Map<String, dynamic> message = {
@@ -59,7 +67,7 @@ class _ChatPageState extends State<ChatPage> {
         url,
         headers: {
           "Content-Type": "application/json",
-          "Authorization": prefs.getString('userToken').toString()
+          "Authorization": '$userToken'
         },
         body: json.encode(message)
     );
@@ -69,6 +77,33 @@ class _ChatPageState extends State<ChatPage> {
     messageController.clear();
   }
 
+
+  Future<void> getAllMessages() async {
+    print("All Messages function called");
+
+    final SharedPreferences sharedPreferences = await prefs;
+    String? userToken = sharedPreferences.getString('userToken');
+
+    var url = Uri.parse('http://192.168.6.16:8080/api/v1/get_messages/$chatId');
+    print(url);
+
+    var response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": '$userToken'
+      },
+    );
+
+    //TODO: Continue to get messages using chat Id
+
+    // print(jsonDecode(response.body));
+
+    // chatsData = jsonDecode(response.body);
+    //
+    // print(chatsData);
+    // print(chatsData.id);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,11 +125,11 @@ class _ChatPageState extends State<ChatPage> {
       ),
     ];
 
-    @override
-    void dispose() {
-      messageController.dispose();
-      super.dispose();
-    }
+    // @override
+    // void dispose() {
+    //   messageController.dispose();
+    //   super.dispose();
+    // }
 
     return Scaffold(
       appBar: appBarWithActions(
@@ -130,6 +165,7 @@ class _ChatPageState extends State<ChatPage> {
     setState(() {
       chatReceiverId = widget.receiverId;
       receiverTitle = widget.receiverName;
+      chatId = widget.chatId;
     });
   }
 

@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:saidika_ui/ui/theme/colors.dart';
 import 'package:saidika_ui/ui/widgets/bottomNavigation.dart';
@@ -24,6 +26,8 @@ class _ProfileState extends State<Profile> {
   int tabIndex = 0; //Tab for description as default
 
   int _selectedIndex = 3; // Profile is at index 1
+
+  Map<String, dynamic>? user;
 
   void _onItemTapped(int index) {
     setState(() {
@@ -50,7 +54,7 @@ class _ProfileState extends State<Profile> {
   Future<String> getActiveProfile() async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    var url = Uri.parse('http://192.168.6.55:8080/active_User');
+    var url = Uri.parse('http://192.168.6.16:8080/active_User');
 
     var response = await http.get(
         url,
@@ -60,9 +64,29 @@ class _ProfileState extends State<Profile> {
         }// Encode the data as JSON
     );
 
-    print(response.body);
+    // print(response.body);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      // Extract cookie from response headers
+      // String? rawCookie = response.headers['set-cookie'];
+      var responseBody = jsonDecode(response.body);
+      setState(() {
+        user = responseBody as Map<String, dynamic>;
+      });
+      print(user);
+      print(user!['id']);
+      print(user!['first_name']);
+      print(user!['last_name']);
+      print(user!['phone']);
+    }
 
     return "Hello";
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getActiveProfile();
   }
 
   void logout() async {
@@ -82,7 +106,12 @@ class _ProfileState extends State<Profile> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(10, 5, 10, 0),
-          child: Column(
+          child: user == null
+           ? SpinKitFadingCube(
+              color: AppColors.primaryColor,
+              size: 50.0,
+            )
+          : Column(
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -144,7 +173,7 @@ class _ProfileState extends State<Profile> {
                     ),
                   ),
                   Text(
-                    'Moses Kuria',
+                    '${user!['first_name']} ${user!['last_name']}',
                     style: TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.bold
@@ -172,7 +201,7 @@ class _ProfileState extends State<Profile> {
                     ],
                   ),
                   Text(
-                    '+254708090304',
+                    user!['phone'],
                     style: TextStyle(
                         fontSize: 18
                     ),
@@ -356,7 +385,7 @@ class _ProfileState extends State<Profile> {
                   endIndent: 40,
                 ),
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pushNamed(context, editProfile);
                   // Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileActivity(data: data,)));
                 },
               ),
@@ -374,7 +403,7 @@ class _ProfileState extends State<Profile> {
                   endIndent: 40,
                 ),
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pushNamed(context, addService);
                   // Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileActivity(data: data,)));
                 },
               ),

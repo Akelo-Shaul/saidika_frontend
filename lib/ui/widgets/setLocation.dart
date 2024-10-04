@@ -47,9 +47,7 @@ class _SetLocationState extends State<SetLocation> {
                 // ),
                 child: ListTile(
                   onTap: (){
-                    Navigator.pop(context, {
-                      'location': location,
-                    });
+                    Navigator.pop(context, location);
                   },
                   title: Text(
                     location,

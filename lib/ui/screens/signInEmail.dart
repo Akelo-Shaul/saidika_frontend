@@ -63,10 +63,10 @@ class _SignInEmailState extends State<SignInEmail> {
 
     var url;
     if (selectedValue == 'PROVIDER'){
-      url = Uri.parse('http://192.168.6.53:8080/api/v1/provider/login');
+      url = Uri.parse('http://192.168.6.16:8080/api/v1/provider/login');
       print(url);
     }else if (selectedValue == 'FINDER'){
-      url  = Uri.parse('http://192.168.6.53:8080/api/v1/finder/login');
+      url  = Uri.parse('http://192.168.6.16:8080/api/v1/finder/login');
       print(url);
     }
 

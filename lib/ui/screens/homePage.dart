@@ -161,9 +161,9 @@ class _HomePageState extends State<HomePage> {
                                 final result = await Navigator.pushNamed(context, setLocation);
                                 if (result != null) {
                                   print(result);
-                                  // setState(() {
-                                  //   currentLocation = result['location'] ?? 'Unknown';
-                                  // });
+                                  setState(() {
+                                    currentLocation = result.toString();
+                                  });
                                 }
                               },
                               style: TextButton.styleFrom(
