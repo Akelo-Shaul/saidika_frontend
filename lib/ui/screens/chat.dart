@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:intl/intl.dart';
 import 'package:saidika_ui/ui/theme/colors.dart';
 import 'package:saidika_ui/ui/widgets/bottomNavigation.dart';
 import 'package:saidika_ui/ui/widgets/imageAsset.dart';
@@ -20,8 +21,21 @@ class Chat extends StatefulWidget {
 class _ChatState extends State<Chat> {
   int _selectedIndex = 2; // Assuming Search is at index 1, adjust if needed
 
-  List<dynamic>? chatsData;
+  List<dynamic> chatsData = [];
   String? chatId;
+  String? userName;
+
+  Future<SharedPreferences> sharedPreferences = SharedPreferences.getInstance();
+
+  Future<void> _loadUserName () async{
+    final SharedPreferences sharedPreferences = await prefs;
+
+    // Fetch the userToken from SharedPreferences
+    String? user = sharedPreferences.getString('userName');
+    setState(() {
+      userName = user;
+    });
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -53,7 +67,7 @@ class _ChatState extends State<Chat> {
     final SharedPreferences sharedPreferences = await prefs;
     String? userToken = sharedPreferences.getString('userToken');
 
-    var url = Uri.parse('http://192.168.6.16:8080/api/v1/messages/get_person_messages');
+    var url = Uri.parse('http://192.168.137.1:8080/api/v1/messages/get_person_messages');
     print(url);
 
     // Map<String, dynamic> message = {
@@ -77,15 +91,19 @@ class _ChatState extends State<Chat> {
     });
 
     print(chatsData);
-    // print(chatsData.id);
-    // print(chatsData);
-    // print(chatsData);
+    print(chatsData[0]['id']);
+    print(chatsData[0]['person1_name']);
+    print(chatsData[0]['person2_name']);
+    print(chatsData[0]['last_message_sent']);
+    print(chatsData[0]['lastMessage_timestamp']);
   }
 
   @override
   void initState() {
     super.initState();
+    _loadUserName();
     allChats();
+    print(chatsData.length);
   } //List of previous messages
 
 
@@ -140,214 +158,124 @@ class _ChatState extends State<Chat> {
                 ],
               ),
               SizedBox(height: 10,),
-              SizedBox(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: chatList.length,
-                  itemBuilder: (context, index){
-                    final chat = chatList[index];
-
-                  return GestureDetector(
-                    onTap: (){
-                      Navigator.pushNamed(
-                        context,
-                        chat_page,
-                        arguments: {
-                          'receiverName': 'Derozen',
-                          'receiverId': 'Namya Biz',
-                          'senderId': 'Sender',
-                          'chatId': 'chatId'
-                        },
-                      );
-                      // setState(() {});
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(0, 4, 0, 4),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: Colors.black,
-                              width: 1,
-                            ),
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(100),
-                                    child: imageAsset(
-                                      isNormalImage: true,
-                                      fileName: 'profile.jpg',
-                                      imgHeight: 45,
-                                      imgWidth: 45,
-                                    ),
-                                  ),
-                                  SizedBox(width: 7), // Adjust the spacing as needed
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start, // Align children to the start
-                                    children: [
-                                      Text(
-                                        chat.name,
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500,
-                                          letterSpacing: .3,
-                                        ),
-                                      ),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            chat.isDelivered ? Icons.done_all_outlined : Icons.done,
-                                            size: 20,
-                                            color: chat.isRead ? Colors.blue : Colors.black,
-                                          ),
-                                          SizedBox(width: 4), // Adjust spacing between icon and text
-                                          Text(
-                                            chat.text,
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              Text(
-                                chat.time,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-
-                  }
-                ),
-              ),
-              //TODO: Start of list from API call
-              SizedBox(height: 10,),
-              SizedBox(
-                child: chatsData == null
-                ?SpinKitFadingCube(
-                  color: AppColors.primaryColor,
-                  size: 50.0,
+              Expanded(
+                // Use Expanded to make ListView take the available space
+                child: chatsData.isEmpty
+                    ? Center(
+                  child: SpinKitFadingCube(
+                    color: AppColors.primaryColor,
+                    size: 50.0,
+                  ),
                 )
-                :ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: chatsData!.length,
-                  itemBuilder: (context, index){
-                    final chat = chatsData![index];
+                    : ListView.builder(
+                  physics: AlwaysScrollableScrollPhysics(), // Makes it scrollable
+                  itemCount: chatsData.length, // Update the itemCount to reflect chatData length
+                  itemBuilder: (context, index) {
+                    // Get values with null checks
+                    String lastMessage = chatsData[index]['last_message_sent'] ?? 'No message available';
+                    String lastMessageTime = chatsData[index]['lastMessage_timestamp'] ?? '';
+                    String person1Name = chatsData[index]['person1_name'] ?? 'Unknown';
+                    String person2Name = chatsData[index]['person2_name'] ?? 'Unknown';
 
-                  return GestureDetector(
-                    onTap: () async{
 
-                      final SharedPreferences sharedPreferences = await prefs;
-                      String? userId = sharedPreferences.getString('userId');
+                    // Parse the timestamp if available, or default to an empty string
+                    String formattedTime = lastMessageTime.isNotEmpty
+                        ? DateFormat('hh:mm a').format(DateTime.parse(lastMessageTime))
+                        : '';
 
-                      Navigator.pushNamed(
-                        context,
-                        chat_page,
-                        arguments: {
-                          'receiverName': 'Derozen',
-                          'receiverId': 'Namya Biz',
-                          'senderId': '$userId',
-                          'chatId': '${chat['id']}'
+                    return person1Name != 'Unknown' || person2Name != 'Unknown'
+                      ?GestureDetector(
+                        onTap: () async {
+                          final SharedPreferences sharedPreferences = await prefs;
+                          String? userId = sharedPreferences.getString('userId');
+
+                          Navigator.pushNamed(
+                            context,
+                            chat_page,
+                            arguments: {
+                              'receiverName': userName == chatsData[index]['person1_name']
+                                  ? '${chatsData[index]['person2_name']}'
+                                  : '${chatsData[index]['person1_name']}',
+                              'receiverId': 'null',
+                              'senderId': '$userId',
+                              'chatId': '${chatsData[index]['id']}',
+                            },
+                          );
                         },
-                      );
-                      // setState(() {});
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(0, 4, 0, 4),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: Colors.black,
-                              width: 1,
-                            ),
-                          ),
-                        ),
                         child: Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                          padding: const EdgeInsets.fromLTRB(0, 4, 0, 4),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: Colors.black,
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(100),
-                                    child: imageAsset(
-                                      isNormalImage: true,
-                                      fileName: 'profile.jpg',
-                                      imgHeight: 45,
-                                      imgWidth: 45,
-                                    ),
-                                  ),
-                                  SizedBox(width: 7), // Adjust the spacing as needed
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start, // Align children to the start
+                                  Row(
                                     children: [
-                                      Text(
-                                        'Shaul',
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500,
-                                          letterSpacing: .3,
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(100),
+                                        child: imageAsset(
+                                          isNormalImage: true,
+                                          fileName: 'profile.jpg',
+                                          imgHeight: 45,
+                                          imgWidth: 45,
                                         ),
                                       ),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                      SizedBox(width: 7), // Adjust the spacing as needed
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start, // Align children to the start
                                         children: [
-                                          Icon(
-                                            Icons.done_all_outlined,
-                                            // chat.isDelivered ? Icons.done_all_outlined : Icons.done,
-                                            size: 20,
-                                            // color: chat.isRead ? Colors.blue : Colors.black,
-                                          ),
-                                          SizedBox(width: 4), // Adjust spacing between icon and text
                                           Text(
-                                            'Hello',
+                                            userName == person1Name ? person2Name : person1Name,
                                             style: TextStyle(
-                                              fontSize: 16,
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w500,
+                                              letterSpacing: .3,
                                             ),
+                                          ),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.done_all_outlined,
+                                                size: 20,
+                                              ),
+                                              SizedBox(width: 4), // Adjust spacing between icon and text
+                                              Text(
+                                                lastMessage,
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ],
                                       ),
                                     ],
                                   ),
+                                  Text(formattedTime),
                                 ],
                               ),
-                              Text(
-                                '11:30'
-                                // chat.time,
-                              ),
-                            ],
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                  );
+                      )
+                      :Container()
+                    ;
+                  },
 
-                  }
                 ),
-              ),
-              //TODO: End of list from API call
+              )
             ],
           ),
         ),

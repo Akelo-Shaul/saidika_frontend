@@ -41,12 +41,12 @@ class _AddServiceState extends State<AddService> {
 
   Future<void> addService() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    var url = Uri.parse('http://192.168.6.16:8080/api/v1/services/add_new_service');
+    var url = Uri.parse('http://192.168.137.1:8080/api/v1/services/add_new_service');
 
     Map<String, dynamic> data = {
       'name': selectedService,
       'description': serviceDescriptionController.text,
-      'available_location': selectedLocation,
+      // 'available_location': selectedLocation,
     };
 
     print(data);

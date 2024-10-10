@@ -3,17 +3,20 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:saidika_ui/ui/widgets/appBar.dart';
 import 'package:saidika_ui/ui/widgets/imageAsset.dart';
 import 'package:saidika_ui/utils/constants.dart';
 import 'package:saidika_ui/utils/messages.dart';
+import 'package:saidika_ui/utils/route.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 List<FocusNode> focusNodes = [
   FocusNode(),
 ];
+
 
 class ChatPage extends StatefulWidget {
 
@@ -30,9 +33,11 @@ class ChatPage extends StatefulWidget {
 
 
 class _ChatPageState extends State<ChatPage> {
-  String? receiverTitle;
+  String receiverTitle = 'User';
   String? chatReceiverId;
   String? chatId;
+  XFile? _selectedImage;
+  List<dynamic> chatsList = [];
 
   final TextEditingController messageController = TextEditingController();
 
@@ -54,7 +59,7 @@ class _ChatPageState extends State<ChatPage> {
     String? userToken = sharedPreferences.getString('userToken');
     String? userId = sharedPreferences.getString('userId');
 
-    var url = Uri.parse('http://192.168.6.16:8080/api/v1/messages/$userId/${chatReceiverId}');
+    var url = Uri.parse('http://192.168.137.1:8080/api/v1/messages/sendMessage/$userId');
     print(url);
 
     Map<String, dynamic> message = {
@@ -84,7 +89,7 @@ class _ChatPageState extends State<ChatPage> {
     final SharedPreferences sharedPreferences = await prefs;
     String? userToken = sharedPreferences.getString('userToken');
 
-    var url = Uri.parse('http://192.168.6.16:8080/api/v1/get_messages/$chatId');
+    var url = Uri.parse('http://192.168.137.1:8080/api/v1/messages/get_messages/$chatId');
     print(url);
 
     var response = await http.get(
@@ -99,11 +104,40 @@ class _ChatPageState extends State<ChatPage> {
 
     // print(jsonDecode(response.body));
 
-    // chatsData = jsonDecode(response.body);
-    //
-    // print(chatsData);
+    setState(() {
+      chatsList = jsonDecode(response.body);
+    });
+
+    print(chatsList);
     // print(chatsData.id);
   }
+
+  Future<void> _openCamera() async {
+    final result = await Navigator.pushNamed(context, cameraPage);
+
+    print(result);
+    // if (result != null) {
+    //   setState(() {
+    //     _selectedImage = XFile(result);
+    //   });
+    // }
+  }
+
+  Future<Map<String, String?>> getUserPreferences() async {
+    final SharedPreferences sharedPreferences = await prefs;
+
+    String? userId = sharedPreferences.getString('userId');
+    String? userToken = sharedPreferences.getString('userToken');
+    String? userName = sharedPreferences.getString('userName');
+
+    // Return the values as a Map
+    return {
+      'userId': userId,
+      'userToken': userToken,
+      'userName': userName,
+    };
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -134,7 +168,7 @@ class _ChatPageState extends State<ChatPage> {
     return Scaffold(
       appBar: appBarWithActions(
           context,
-          receiverTitle!,
+          receiverTitle,
           appBarActions,
         titleStyle: appTextTheme(context).labelMedium?.copyWith(fontWeight: FontWeight.bold)
       ),
@@ -144,14 +178,14 @@ class _ChatPageState extends State<ChatPage> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(15, 10, 15, 0),
               child: ListView.builder(
-                itemCount: messages.length,
+                itemCount: chatsList.length,
                 itemBuilder: (context, index) {
-                  return _buildMessageBubble(context, messages[index]);
+                  return _buildMessageBubble(context, chatsList[index], getUserPreferences());
                 },
               ),
             ),
           ),
-          _buildMessageInputField(this.context,this.messageController, addChat),
+          _buildMessageInputField(this.context,this.messageController, addChat, _openCamera),
         ],
       ),
     );
@@ -161,12 +195,15 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void initState() {
     super.initState();
-    sortMessagesByTime();
     setState(() {
       chatReceiverId = widget.receiverId;
       receiverTitle = widget.receiverName;
       chatId = widget.chatId;
     });
+    sortMessagesByTime();
+    getAllMessages();
+    print(widget.chatId);
+    print(widget.receiverName);
   }
 
   void sortMessagesByTime() {
@@ -175,88 +212,108 @@ class _ChatPageState extends State<ChatPage> {
 
 }
 
-Widget _buildMessageBubble(BuildContext context, Messages message) {
-  BorderRadius borderRadius = message.isSentByMe
-      ? BorderRadius.only(
-      topLeft: Radius.circular(3),
-      topRight: Radius.circular(20),
-      bottomLeft: Radius.circular(20),
-      bottomRight: Radius.circular(20)
-  )
-      : BorderRadius.only(
-      topLeft: Radius.circular(20),
-      topRight: Radius.circular(3),
-      bottomLeft: Radius.circular(20),
-      bottomRight: Radius.circular(20)
-  );
+Widget _buildMessageBubble(BuildContext context, dynamic message, Future<Map<String, String?>> getUserPreferences) {
+  return FutureBuilder(
+      future: getUserPreferences,
+      builder: (context, snapshot){
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          return Text('Error fetching user preferences');
+        } else if (!snapshot.hasData) {
+          return Text('No data');
+        } else {
+          final userPreferences = snapshot.data;
+          final userId = userPreferences!['userId'];
 
+          bool isSentByMe = message['sender'] == userId;
 
-  return Align(
-    alignment: message.isSentByMe ? Alignment.centerLeft : Alignment.centerRight,
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (message.isSentByMe) // Display avatar on the right if the message is sent
-          ClipRRect(
-            borderRadius: BorderRadius.circular(100),
-            child: imageAsset(
-              isNormalImage: true,
-              fileName: 'profile.jpg',
-              imgHeight: 35,
-              imgWidth: 35,
-            ),
-          ),
-        if (message.isSentByMe)
-          SizedBox(width: 8.0),
-        IntrinsicWidth(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
-            child: Container(
-              margin: EdgeInsets.symmetric(vertical: 4.0),
-              padding: EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-              decoration: BoxDecoration(
-                color: Colors.grey,
-                borderRadius: borderRadius,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start, // Align contents to the left
-                children: [
-                  Text(
-                    message.message,
+          BorderRadius borderRadius = isSentByMe
+            ? BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(3),
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              )
+            : BorderRadius.only(
+                topLeft: Radius.circular(3),
+                topRight: Radius.circular(20),
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              );
+
+          return Align(
+            alignment: isSentByMe ? Alignment.centerRight : Alignment.centerLeft,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                if (!isSentByMe) // Display avatar on the right if the message is sent
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(100),
+                    child: imageAsset(
+                      isNormalImage: true,
+                      fileName: 'profile.jpg',
+                      imgHeight: 35,
+                      imgWidth: 35,
+                    ),
                   ),
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: Text(
-                      DateFormat.jm().format(message.time).toString(),
-                      style: TextStyle(
-                        fontSize: 8,
+                if (!isSentByMe)
+                  SizedBox(width: 8.0),
+                IntrinsicWidth(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
+                    child: Container(
+                      margin: EdgeInsets.symmetric(vertical: 4.0),
+                      padding: EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+                      decoration: BoxDecoration(
+                        // color: isSentByMe ? Colors.blue : Colors.grey[300],
+                        color: Colors.grey,
+                        borderRadius: borderRadius,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start, // Align contents to the left
+                        children: [
+                          Text(
+                            '${message['text']}',
+                          ),
+                          Align(
+                            alignment: Alignment.bottomRight,
+                            child: Text(
+                              DateFormat('hh:mm').format(DateTime.parse(message['timestamp'])),
+                              style: TextStyle(
+                                fontSize: 8,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+                if (isSentByMe)
+                  SizedBox(width: 8.0),
+                if (isSentByMe) // Display avatar on the left if the message is received
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(100),
+                    child: imageAsset(
+                      isNormalImage: true,
+                      fileName: 'profile.jpg',
+                      imgHeight: 35,
+                      imgWidth: 35,
+                    ),
+                  ),
+              ],
             ),
-          ),
-        ),
-        if (!message.isSentByMe)
-          SizedBox(width: 8.0),
-        if (!message.isSentByMe) // Display avatar on the left if the message is received
-          ClipRRect(
-            borderRadius: BorderRadius.circular(100),
-            child: imageAsset(
-              isNormalImage: true,
-              fileName: 'profile.jpg',
-              imgHeight: 35,
-              imgWidth: 35,
-            ),
-          ),
-      ],
-    ),
+          );
+        }
+      }
   );
 }
 
-Widget _buildMessageInputField(BuildContext context, TextEditingController messageController, Future<void> Function() addChat) {
+
+Widget _buildMessageInputField(BuildContext context, TextEditingController messageController, Future<void> Function() addChat, Future<void> Function() _openCamera) {
 
   void sendMessage() {
     print("Send button pressed"); // Add this line
@@ -269,6 +326,7 @@ Widget _buildMessageInputField(BuildContext context, TextEditingController messa
   }
 
 
+
   return Container(
     width: double.infinity, // Ensure the Container takes up the full width
     child: Padding(
@@ -278,7 +336,9 @@ Widget _buildMessageInputField(BuildContext context, TextEditingController messa
           Flexible(
             flex: 1,
             child: IconButton(
-              onPressed: () {},
+              onPressed: (){
+                _openCamera();
+              },
               icon: Icon(Icons.camera_alt),
               padding: EdgeInsets.all(3), // Optional: Reduce the padding around the icon
             ),
@@ -305,14 +365,6 @@ Widget _buildMessageInputField(BuildContext context, TextEditingController messa
                       .labelMedium?.copyWith(fontSize: 16)
                 ),
               ),
-            ),
-          ),
-          Flexible(
-            flex: 1,
-            child: IconButton(
-              onPressed: () {},
-              icon: Icon(Icons.attach_file),
-              padding: EdgeInsets.all(0), // Optional: Reduce the padding around the icon
             ),
           ),
           Flexible(

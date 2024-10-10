@@ -77,7 +77,7 @@ class _EditProfileState extends State<EditProfile> {
     final SharedPreferences sharedPreferences = await prefs;
     String? userToken = sharedPreferences.getString('userToken');
 
-    var url = Uri.parse('http://192.168.6.16:8080/active_User');
+    var url = Uri.parse('http://192.168.137.1:8080/active_User');
 
     var response = await http.get(
         url,
@@ -118,7 +118,7 @@ class _EditProfileState extends State<EditProfile> {
 
   Future<void> editProfile() async{
 
-    var url = Uri.parse('http://192.168.6.16:8080/api/v1/provider/register');
+    var url = Uri.parse('http://192.168.137.1:8080/api/v1/provider/register');
 
     Map<String, dynamic> data = {
       "first_name": firstNameController.text,

@@ -54,7 +54,7 @@ class _ProfileState extends State<Profile> {
   Future<String> getActiveProfile() async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    var url = Uri.parse('http://192.168.6.16:8080/active_User');
+    var url = Uri.parse('http://192.168.137.1:8080/active_User');
 
     var response = await http.get(
         url,

@@ -31,23 +31,47 @@ class _HomePageState extends State<HomePage> {
     Service(name: 'Cobler', description: 'shoes repair', imageUrl: '${imagePath}service_images/cobler.jpg', appearanceInDB: 0),
   ];
 
-  String currentSelectedPage = 'Hi, There!';
+  String currentSelectedPage = '';
 
   //TODO: Hande this with cookies
   bool isLoggedIn = false;
   //TODO: Get from user logged in profile
-  String user = 'Shaul';
+
+  Future<SharedPreferences> prefs = SharedPreferences.getInstance();
+
+  String capitalize(String? input) {
+    if (input == null || input.isEmpty) {
+      return ''; // Handle null or empty cases
+    }
+    return input[0].toUpperCase() + input.substring(1).toLowerCase();
+  }
 
   Future<void> makeAuthorizedRequest() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('userToken');
+    final SharedPreferences sharedPreferences = await prefs;
 
-    if (token != null){
-      isLoggedIn = true;
-    }
+    String? userToken = sharedPreferences.getString('userToken');
+    String? userName = sharedPreferences.getString('userName');
 
-    print(token);
+    setState(() {
+      print(userName);
+      if (userToken != null) {
+        isLoggedIn = true;
+      }
+
+      // Safely assign userName, ensuring it's not null
+      if (userName != null && userName.isNotEmpty) {
+        currentSelectedPage = isLoggedIn
+            ? 'Hi, ${capitalize(userName)}!'
+            : 'Hi, There!';
+      }
+
+      // print(currentSelectedPage);
+    });
+
+    // print(userToken);
+
   }
+
 
   @override
   void initState() {
@@ -56,9 +80,6 @@ class _HomePageState extends State<HomePage> {
 
     makeAuthorizedRequest();
 
-    currentSelectedPage = isLoggedIn
-        ? 'Hi, There!'
-        : 'Hi, ${user}!';
   }
 
   void sortByAppearance(){

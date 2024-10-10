@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:saidika_ui/ui/screens/CameraScreen.dart';
 import 'package:saidika_ui/ui/screens/SplashScreen.dart';
 import 'package:saidika_ui/ui/screens/addService.dart';
 import 'package:saidika_ui/ui/screens/chat.dart';
@@ -28,6 +29,7 @@ const String profile = '/profile';
 const String chat_page = '/chat_page';
 const String addService = '/addService';
 const String editProfile = '/editProfile';
+const String cameraPage = '/cameraPage';
 
 class RouteGenerator{
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -67,6 +69,8 @@ class RouteGenerator{
         return MaterialPageRoute(builder: (_) => AddService());
       case editProfile:
         return MaterialPageRoute(builder: (_) => EditProfile());
+      case cameraPage:
+        return MaterialPageRoute(builder: (_) => CameraScreen());
       default:
         return _errorRoute();
     }

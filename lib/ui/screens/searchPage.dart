@@ -33,11 +33,14 @@ class _SearchState extends State<Search> {
   String? selectedCategory;
   final TextEditingController searchInputController = TextEditingController();
 
+  String? chatId;
+
   Future<SharedPreferences> prefs =SharedPreferences.getInstance();
 
   // Fetch service providers from API
   Future<void> getServiceProviders() async {
-    var url = Uri.parse('http://192.168.6.16:8080/api/v1/services/filter_by_location/$searchLocation');
+    var url = Uri.parse('http://192.168.137.1:8080/api/v1/services/filter_by_location/$searchLocation');
+    print(url);
 
     final SharedPreferences sharedPreferences = await prefs;
 
@@ -170,7 +173,7 @@ class _SearchState extends State<Search> {
                             final result = await Navigator.pushNamed(context, setLocation);
                             if (result != null) {
                               setState(() {
-                                searchLocation = result.toString();
+                                searchLocation = result.toString().toLowerCase();
                                 getServiceProviders(); // Fetch filtered data by location
                               });
                             }
@@ -276,14 +279,18 @@ class _SearchState extends State<Search> {
                                         onTap: () async {
                                           final SharedPreferences sharedPreferences = await prefs;
                                           String? senderId = sharedPreferences.getString('userId');
+
+                                          List<String> uuidList = [provider['provider']['id'].toString(), senderId.toString()];
+                                          uuidList.sort();
+                                          chatId = uuidList[0] + uuidList[1];
                                           Navigator.pushNamed(
                                             context,
                                             chat_page,
                                             arguments: {
-                                              'receiverName': provider['provider']['first_name'].toString(),
-                                              'receiverId': provider['provider']['id'].toString(),
+                                              'receiverName': '${provider['provider']['first_name']}',
+                                              'receiverId': '${provider['provider']['id']}',
                                               'senderId': '$senderId',
-                                              'chatId': 'chatId'
+                                              'chatId': '$chatId'
                                             },
                                           );
                                         },

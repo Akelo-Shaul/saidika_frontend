@@ -74,10 +74,10 @@ class _SignUpManuallyScreenState extends State<SignUpManuallyScreen> {
 
     var url;
     if (selectedValue == 'PROVIDER'){
-      url = Uri.parse('http://192.168.6.16:8080/api/v1/provider/register');
+      url = Uri.parse('http://192.168.137.1:8080/api/v1/provider/register');
       print(url);
     }else if (selectedValue == 'FINDER'){
-      url = Uri.parse('http://192.168.6.16:8080/api/v1/finder/register');
+      url = Uri.parse('http://192.168.137.1:8080/api/v1/finder/register');
       print(url);
     }
 

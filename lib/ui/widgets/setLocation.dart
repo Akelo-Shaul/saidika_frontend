@@ -11,7 +11,7 @@ class SetLocation extends StatefulWidget {
 
 class _SetLocationState extends State<SetLocation> {
 
-  List<String> locations = ['Nairobi', 'Kisumu', 'Kakamega', 'Malaba', 'Kilgoris', 'Nyando', 'Olare'];
+  // List<String> locations = ['Nairobi', 'Kisumu', 'Kakamega', 'Malaba', 'Kilgoris', 'Nyando', 'Olare'];
 
 
 
@@ -24,9 +24,9 @@ class _SetLocationState extends State<SetLocation> {
       body: Padding(
         padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
           child: ListView.builder(
-          itemCount: locations.length,
+          itemCount: locationList.length,
           itemBuilder: (context, index){
-            final location = locations[index];
+            final location = locationList[index];
             return Container(
               width: double.infinity, //Span full width
               decoration: BoxDecoration(
