@@ -29,7 +29,7 @@ class _SetLocationState extends State<SetLocation> {
             final location = locationList[index];
             return Container(
               width: double.infinity, //Span full width
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                   border: Border(
                       bottom: BorderSide(
                         width: 1,

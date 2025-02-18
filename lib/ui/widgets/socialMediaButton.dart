@@ -10,19 +10,18 @@ class SocialMediaButton extends StatelessWidget {
   Color? bgColor;
   final VoidCallback onPressed;
 
-  SocialMediaButton({Key? key, this.text, required this.fileName,this.bgColor, required this.onPressed})
-      : super(key: key);
+  SocialMediaButton({super.key, this.text, required this.fileName,this.bgColor, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
     return CupertinoButton(
       onPressed: onPressed,
       child: Container(
-        padding: EdgeInsetsDirectional.all(15),
+        padding: const EdgeInsetsDirectional.all(15),
         // margin: EdgeInsetsDirectional.only(bottom: 10),
         decoration: BoxDecoration(
           color: bgColor ?? AppColors.primaryColor,
-          borderRadius: BorderRadius.all(Radius.circular(15)),
+          borderRadius: const BorderRadius.all(Radius.circular(15)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,

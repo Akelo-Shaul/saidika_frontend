@@ -7,23 +7,23 @@ import 'package:saidika_ui/utils/constants.dart';
 import 'package:saidika_ui/utils/route.dart';
 
 class SignUpScreen extends StatelessWidget {
-  const SignUpScreen({Key? key}) : super(key: key);
+  const SignUpScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
-        physics: BouncingScrollPhysics(),
+        physics: const BouncingScrollPhysics(),
         scrollDirection: Axis.vertical,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(height: 100),
+            const SizedBox(height: 100),
             Text(
               'Sign up!',
               style: appTextTheme(context).titleLarge,
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             SocialMediaButton(
                 text: "Continue with Google", fileName: "google.svg",bgColor: AppColors.googleBgColor,
                 onPressed: () {
@@ -33,14 +33,14 @@ class SignUpScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Expanded(
+                const Expanded(
                   child: Divider(
                     height: 2,
                     thickness: 2,
                   ),
                 ),
                 Container(
-                  margin: EdgeInsetsDirectional.only(start: 5, end: 5),
+                  margin: const EdgeInsetsDirectional.only(start: 5, end: 5),
                   child: Text(
                     'or',
                     style: appTextTheme(context).labelSmall!.copyWith(
@@ -48,8 +48,8 @@ class SignUpScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 50),
-                Expanded(
+                const SizedBox(height: 50),
+                const Expanded(
                   child: Divider(
                     height: 2,
                     thickness: 2,
@@ -57,9 +57,9 @@ class SignUpScreen extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 50),
+            const SizedBox(height: 50),
             Container(
-              margin: EdgeInsetsDirectional.only(start: 20,end: 20),
+              margin: const EdgeInsetsDirectional.only(start: 20,end: 20),
               child: AppButton(
                 btnText: 'Create Account',
                 textSize: 15,
@@ -68,7 +68,7 @@ class SignUpScreen extends StatelessWidget {
                 },
               ),
             ),
-            SizedBox(height: 50),
+            const SizedBox(height: 50),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

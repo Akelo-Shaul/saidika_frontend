@@ -8,7 +8,7 @@ TextTheme appTextTheme(BuildContext context){
 
 List<String> locationList = ['Nairobi','Mombasa','Kisumu','Malaba','Kilgoris','Nyando','Kisii','Malaba','Awendo','Siaya','Njoro'];
 
-List<String> servicesList = ['Plumbing','Electrical','Cobler','Carpentry','Tailoring','Painting','Mechanic','Welding','Plastic Welding','Laundry Services'];
+List<String> servicesList = ['Plumbing','Electrical','Cobler','Carpentry','Tailoring','Painting','Mechanic','Welding','Plastic Welding','Laundry Services','House Cleaning','Make Up'];
 // List<String> servicesList = List.generate(100, (index) => 'Item $index');
 
 // Widget getSizedBox({double? height, double? width}) {

@@ -17,20 +17,20 @@ extension AppColors on ColorScheme {
     },
   );
 
-  static Color primaryColor = Color(0xFFF88020);
-  static Color primaryLightColor = Color(0xFFFFB366);
-  static Color white = Color(0xffffffff);
-  static Color scafoldColor = Color(0xfff6f6f6);
-  static Color textColor = Color(0xff171717);
-  static Color textColorLight = Color(0xff8c8c8c);
-  static Color grey = Color(0xffefeeee);
-  static Color orange = Color(0xFFFF9800);
-  static Color orangeLight = Color(0xFFFFE0B2);
-  static Color red = Color(0xff750000);
-  static Color redLight = Color(0xffFF8A8A);
-  static Color green = Color(0xff007500);
-  static Color greenLight = Color(0xffe0ffe0);
-  static Color googleBgColor = Color(0xffe01e3c);
-  static Color fbBgColor = Color(0xff39569c);
-  static Color appleBgColor = Color(0xff000000);
+  static Color primaryColor = const Color(0xFFF88020);
+  static Color primaryLightColor = const Color(0xFFFFB366);
+  static Color white = const Color(0xffffffff);
+  static Color scafoldColor = const Color(0xfff6f6f6);
+  static Color textColor = const Color(0xff171717);
+  static Color textColorLight = const Color(0xff8c8c8c);
+  static Color grey = const Color(0xffefeeee);
+  static Color orange = const Color(0xFFFF9800);
+  static Color orangeLight = const Color(0xFFFFE0B2);
+  static Color red = const Color(0xff750000);
+  static Color redLight = const Color(0xffFF8A8A);
+  static Color green = const Color(0xff007500);
+  static Color greenLight = const Color(0xffe0ffe0);
+  static Color googleBgColor = const Color(0xffe01e3c);
+  static Color fbBgColor = const Color(0xff39569c);
+  static Color appleBgColor = const Color(0xff000000);
 }

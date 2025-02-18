@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:saidika_ui/ui/screens/CameraScreen.dart';
 import 'package:saidika_ui/ui/screens/SplashScreen.dart';
 import 'package:saidika_ui/ui/screens/addService.dart';
@@ -35,42 +36,44 @@ class RouteGenerator{
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case splashScreen:
-        return MaterialPageRoute(builder: (_) => SplashScreen());
+        return MaterialPageRoute(builder: (_) => const SplashScreen());
       case introSliderScreen:
-        return MaterialPageRoute(builder: (_) => IntroSliderScreen());
+        return MaterialPageRoute(builder: (_) => const IntroSliderScreen());
       case signInScreen:
-        return MaterialPageRoute(builder: (_) => SignInScreen());
+        return MaterialPageRoute(builder: (_) => const SignInScreen());
       case signUpScreen:
-        return MaterialPageRoute(builder: (_) => SignUpScreen());
+        return MaterialPageRoute(builder: (_) => const SignUpScreen());
       case signUpManuallyScreen:
-        return MaterialPageRoute(builder: (_) => SignUpManuallyScreen());
+        return MaterialPageRoute(builder: (_) => const SignUpManuallyScreen());
       case homePage: 
-        return MaterialPageRoute(builder: (_) => HomePage());
+        return MaterialPageRoute(builder: (_) => const HomePage());
       case signInEmail:
-        return MaterialPageRoute(builder: (_) => SignInEmail());
+        return MaterialPageRoute(builder: (_) => const SignInEmail());
       case setLocation:
-        return MaterialPageRoute(builder: (_) => SetLocation());
+        return MaterialPageRoute(builder: (_) => const SetLocation());
       case search:
         final String data = settings.arguments.toString();
         return MaterialPageRoute(builder: (_) => Search(data: data));
       case chats:
-        return MaterialPageRoute(builder: (_) => Chat());
+        return MaterialPageRoute(builder: (_) => const Chat());
       case chat_page:
-        final args = settings.arguments as Map<String, String>;
+        final args = settings.arguments as Map<String, dynamic>;
+        // final XFile imageFile = settings.arguments as XFile;
         return MaterialPageRoute(builder: (_) => ChatPage(
           receiverName: args['receiverName']!,
           receiverId: args['receiverId']!,
           senderId: args['senderId']!,
           chatId: args['chatId']!,
+          chatPhoto: args['chatPhoto'] as XFile?,
         ));
       case profile:
-        return MaterialPageRoute(builder: (_) => Profile());
+        return MaterialPageRoute(builder: (_) => const Profile());
       case addService:
-        return MaterialPageRoute(builder: (_) => AddService());
+        return MaterialPageRoute(builder: (_) => const AddService());
       case editProfile:
-        return MaterialPageRoute(builder: (_) => EditProfile());
+        return MaterialPageRoute(builder: (_) => const EditProfile());
       case cameraPage:
-        return MaterialPageRoute(builder: (_) => CameraScreen());
+        return MaterialPageRoute(builder: (_) => const CameraScreen());
       default:
         return _errorRoute();
     }
@@ -80,9 +83,9 @@ class RouteGenerator{
     return MaterialPageRoute(builder: (_){
       return Scaffold(
         appBar: AppBar(
-          title: Text('Error'),
+          title: const Text('Error'),
         ),
-        body: Center(
+        body: const Center(
           child: Text('ERROR'),
         ),
       );

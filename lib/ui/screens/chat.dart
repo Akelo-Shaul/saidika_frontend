@@ -24,16 +24,19 @@ class _ChatState extends State<Chat> {
   List<dynamic> chatsData = [];
   String? chatId;
   String? userName;
+  String? senderId;
 
   Future<SharedPreferences> sharedPreferences = SharedPreferences.getInstance();
 
-  Future<void> _loadUserName () async{
+  Future<void> _loadUser () async{
     final SharedPreferences sharedPreferences = await prefs;
 
     // Fetch the userToken from SharedPreferences
     String? user = sharedPreferences.getString('userName');
+    String? sender = sharedPreferences.getString('userId');
     setState(() {
       userName = user;
+      senderId = sender;
     });
   }
 
@@ -67,7 +70,7 @@ class _ChatState extends State<Chat> {
     final SharedPreferences sharedPreferences = await prefs;
     String? userToken = sharedPreferences.getString('userToken');
 
-    var url = Uri.parse('http://192.168.137.1:8080/api/v1/messages/get_person_messages');
+    var url = Uri.parse('https://saidika-backend.onrender.com/api/v1/messages/get_person_messages');
     print(url);
 
     // Map<String, dynamic> message = {
@@ -91,17 +94,17 @@ class _ChatState extends State<Chat> {
     });
 
     print(chatsData);
-    print(chatsData[0]['id']);
-    print(chatsData[0]['person1_name']);
-    print(chatsData[0]['person2_name']);
-    print(chatsData[0]['last_message_sent']);
-    print(chatsData[0]['lastMessage_timestamp']);
+    // print(chatsData[0]['id']);
+    // print(chatsData[0]['person1_name']);
+    // print(chatsData[0]['person2_name']);
+    // print(chatsData[0]['last_message_sent']);
+    // print(chatsData[0]['lastMessage_timestamp']);
   }
 
   @override
   void initState() {
     super.initState();
-    _loadUserName();
+    _loadUser();
     allChats();
     print(chatsData.length);
   } //List of previous messages
@@ -143,7 +146,7 @@ class _ChatState extends State<Chat> {
           padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
           child: Column(
             children: [
-              Row(
+              const Row(
                 children: [
                   Text(
                     'Messages',
@@ -157,25 +160,27 @@ class _ChatState extends State<Chat> {
                   ),
                 ],
               ),
-              SizedBox(height: 10,),
-              Expanded(
-                // Use Expanded to make ListView take the available space
+              const SizedBox(height: 10,),
+              chatsData.isNotEmpty
+                ? Expanded(
                 child: chatsData.isEmpty
-                    ? Center(
-                  child: SpinKitFadingCube(
-                    color: AppColors.primaryColor,
-                    size: 50.0,
-                  ),
-                )
-                    : ListView.builder(
-                  physics: AlwaysScrollableScrollPhysics(), // Makes it scrollable
-                  itemCount: chatsData.length, // Update the itemCount to reflect chatData length
-                  itemBuilder: (context, index) {
+                  ? Center(
+                    child: SpinKitFadingCube(
+                      color: AppColors.primaryColor,
+                      size: 50.0,
+                    ),
+                  )
+                  : ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(), // Makes it scrollable
+                    itemCount: chatsData.length, // Update the itemCount to reflect chatData length
+                    itemBuilder: (context, index) {
                     // Get values with null checks
                     String lastMessage = chatsData[index]['last_message_sent'] ?? 'No message available';
                     String lastMessageTime = chatsData[index]['lastMessage_timestamp'] ?? '';
                     String person1Name = chatsData[index]['person1_name'] ?? 'Unknown';
                     String person2Name = chatsData[index]['person2_name'] ?? 'Unknown';
+                    String person1Id = chatsData[index]['person1_id'] ?? 'Unknown';
+                    String person2Id = chatsData[index]['person2_id'] ?? 'Unknown';
 
 
                     // Parse the timestamp if available, or default to an empty string
@@ -196,16 +201,19 @@ class _ChatState extends State<Chat> {
                               'receiverName': userName == chatsData[index]['person1_name']
                                   ? '${chatsData[index]['person2_name']}'
                                   : '${chatsData[index]['person1_name']}',
-                              'receiverId': 'null',
+                              'receiverId': senderId == chatsData[index]['person1_id']
+                                  ? '${chatsData[index]['person2_id']}'
+                                  : '${chatsData[index]['person1_id']}',
                               'senderId': '$userId',
                               'chatId': '${chatsData[index]['id']}',
+                              'chatPhoto': null,
                             },
                           );
                         },
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(0, 4, 0, 4),
                           child: Container(
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               border: Border(
                                 bottom: BorderSide(
                                   color: Colors.black,
@@ -230,13 +238,13 @@ class _ChatState extends State<Chat> {
                                           imgWidth: 45,
                                         ),
                                       ),
-                                      SizedBox(width: 7), // Adjust the spacing as needed
+                                      const SizedBox(width: 7), // Adjust the spacing as needed
                                       Column(
                                         crossAxisAlignment: CrossAxisAlignment.start, // Align children to the start
                                         children: [
                                           Text(
                                             userName == person1Name ? person2Name : person1Name,
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                               fontSize: 18,
                                               fontWeight: FontWeight.w500,
                                               letterSpacing: .3,
@@ -246,15 +254,19 @@ class _ChatState extends State<Chat> {
                                             mainAxisAlignment: MainAxisAlignment.start,
                                             crossAxisAlignment: CrossAxisAlignment.center,
                                             children: [
-                                              Icon(
+                                              const Icon(
                                                 Icons.done_all_outlined,
                                                 size: 20,
                                               ),
-                                              SizedBox(width: 4), // Adjust spacing between icon and text
-                                              Text(
-                                                lastMessage,
-                                                style: TextStyle(
-                                                  fontSize: 16,
+                                              const SizedBox(width: 4), // Adjust spacing between icon and text
+                                              SizedBox(
+                                                width: MediaQuery.sizeOf(context).width * 0.5,
+                                                child: Text(
+                                                  lastMessage,
+                                                  style: const TextStyle(
+                                                    fontSize: 16,
+                                                  ),
+                                                  overflow: TextOverflow.ellipsis,
                                                 ),
                                               ),
                                             ],
@@ -273,9 +285,9 @@ class _ChatState extends State<Chat> {
                       :Container()
                     ;
                   },
-
-                ),
-              )
+                  ),
+                )
+                : const Text('No messages')
             ],
           ),
         ),

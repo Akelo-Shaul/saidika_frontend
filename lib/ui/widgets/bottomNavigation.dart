@@ -17,9 +17,9 @@ class BottomNavigation extends StatelessWidget {
     return NavigationBarTheme(
       data: NavigationBarThemeData(
         indicatorColor: AppColors.primaryColor,
-        labelTextStyle: MaterialStateProperty.resolveWith<TextStyle?>(
-              (Set<MaterialState> states) {
-            if (states.contains(MaterialState.selected)) {
+        labelTextStyle: WidgetStateProperty.resolveWith<TextStyle?>(
+              (Set<WidgetState> states) {
+            if (states.contains(WidgetState.selected)) {
               // Text style for the selected label
               return appTextTheme(context).labelSmall?.copyWith(
                 color: AppColors.textColor,

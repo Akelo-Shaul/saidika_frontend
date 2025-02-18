@@ -39,9 +39,10 @@ class _AddServiceState extends State<AddService> {
     setState(() {});
   }
 
+
   Future<void> addService() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    var url = Uri.parse('http://192.168.137.1:8080/api/v1/services/add_new_service');
+    var url = Uri.parse('https://saidika-backend.onrender.com/api/v1/services/add_new_service');
 
     Map<String, dynamic> data = {
       'name': selectedService,
@@ -62,7 +63,20 @@ class _AddServiceState extends State<AddService> {
 
     print(response.body);
 
-    Navigator.pop(context);
+    var responseBody = jsonDecode(response.body);
+
+    print(context);
+
+    print(responseBody['message']);
+
+    if (response.statusCode == 200 || response.statusCode == 201){
+      prefs.setBool('first_time_login', false);
+      Navigator.pushNamed(context, homePage);
+    } else {
+
+    }
+    // Navigator.pop(context);
+    // Navigator.pushNamed(context, homePage);
   }
 
 
@@ -76,11 +90,11 @@ class _AddServiceState extends State<AddService> {
         return StatefulBuilder( // Use StatefulBuilder to manage the state within the dialog
           builder: (context, setState) {
             return Dialog(
-              insetPadding: EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+              insetPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(0), // No rounded corners for full screen
               ),
-              child: Container(
+              child: SizedBox(
                 width: MediaQuery.of(context).size.width, // Full width
                 height: MediaQuery.of(context).size.height, // Full height
                 child: Column(
@@ -155,11 +169,11 @@ class _AddServiceState extends State<AddService> {
         return StatefulBuilder( // Use StatefulBuilder to manage the state within the dialog
           builder: (context, setState) {
             return Dialog(
-              insetPadding: EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+              insetPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(0), // No rounded corners for full screen
               ),
-              child: Container(
+              child: SizedBox(
                 width: MediaQuery.of(context).size.width, // Full width
                 height: MediaQuery.of(context).size.height, // Full height
                 child: Column(
@@ -227,182 +241,134 @@ class _AddServiceState extends State<AddService> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: appBar(
-          context,
-          "Add Service",
-          titleStyle: appTextTheme(context).labelMedium?.copyWith(fontWeight: FontWeight.bold)
+        context,
+        "Add Service",
+        titleStyle: appTextTheme(context).labelMedium?.copyWith(fontWeight: FontWeight.bold),
       ),
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
-        child: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          physics: BouncingScrollPhysics(),
-          child: Padding(
-            padding: EdgeInsetsDirectional.all(20),
-            child: Column(
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    // Trigger dropdown when tapped
-                    _showCustomServiceDropdown(context);
-                  },
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 20.0),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      border: Border.all(color: Colors.grey),
-                      color: Colors.white,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.control_point, color: AppColors.textColorLight),
-                            SizedBox(width: 8),
-                            Text(
-                              selectedService ?? "Select a service",
-                              style: appTextTheme(context).labelMedium?.copyWith(color: AppColors.textColorLight),
-                            ),
-                          ],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,  // Pushes content to the top and bottom
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                physics: const BouncingScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.all(20),
+                  child: Column(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          // Trigger dropdown when tapped
+                          _showCustomServiceDropdown(context);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 20.0),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            border: Border.all(color: Colors.grey),
+                            color: Colors.white,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.control_point, color: AppColors.textColorLight),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    selectedService ?? "Select a service",
+                                    style: appTextTheme(context).labelMedium?.copyWith(color: AppColors.textColorLight),
+                                  ),
+                                ],
+                              ),
+                              Icon(Icons.arrow_drop_down, color: AppColors.textColorLight),
+                            ],
+                          ),
                         ),
-                        Icon(Icons.arrow_drop_down, color: AppColors.textColorLight),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 20),
+                      AppTextArea(
+                        hintText: 'Description',
+                        prefixIcon: Icons.description,
+                        controller: serviceDescriptionController,
+                        focusNode: focusNodes[0],
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          // Trigger dropdown when tapped
+                          _showCustomLocationDropdown(context);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 20.0),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            border: Border.all(color: Colors.grey),
+                            color: Colors.white,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.location_on, color: AppColors.textColorLight),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    selectedLocation ?? "Select a Location",
+                                    style: appTextTheme(context).labelMedium?.copyWith(color: AppColors.textColorLight),
+                                  ),
+                                ],
+                              ),
+                              Icon(Icons.arrow_drop_down, color: AppColors.textColorLight),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Text(
+                            'Can\'t see your service?',
+                            style: appTextTheme(context).labelSmall,
+                          ),
+                          linkText(' New service', context, () {
+                            // Navigator.pushReplacementNamed(context, addManualService);
+                          }),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      AppButton(
+                        btnText: 'Add Service',
+                        textSize: 15,
+                        voidCallBack: () {
+                          addService();
+                        },
+                      ),
+                    ],
                   ),
                 ),
-                SizedBox(height: 20),
-                AppTextArea(
-                  hintText: 'Description',
-                  prefixIcon: Icons.description,
-                  controller: serviceDescriptionController,
-                  focusNode: focusNodes[0],
-                ),
-                GestureDetector(
-                  onTap: () {
-                    // Trigger dropdown when tapped
-                    _showCustomLocationDropdown(context);
-                  },
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 20.0),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      border: Border.all(color: Colors.grey),
-                      color: Colors.white,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.location_on, color: AppColors.textColorLight),
-                            SizedBox(width: 8),
-                            Text(
-                              selectedLocation ?? "Select a Locaton",
-                              style: appTextTheme(context).labelMedium?.copyWith(color: AppColors.textColorLight),
-                            ),
-                          ],
-                        ),
-                        Icon(Icons.arrow_drop_down, color: AppColors.textColorLight),
-                      ],
-                    ),
-                  ),
-                ),
-                // DropdownButtonFormField<String>(
-                //   decoration: InputDecoration(
-                //     // Removed the icons and customized the border
-                //     enabledBorder: OutlineInputBorder(
-                //       borderRadius: BorderRadius.circular(15),
-                //     ),
-                //     border: OutlineInputBorder(
-                //       borderRadius: BorderRadius.circular(15),
-                //     ),
-                //     filled: true,
-                //     fillColor: AppColors.grey,
-                //     prefixIcon: Icon(Icons.location_on),
-                //   ),
-                //   dropdownColor: AppColors.grey,
-                //   value: selectedLocation.isEmpty ? null : selectedLocation,
-                //   hint: Text(
-                //     "Select Location",  // Placeholder text
-                //     style: appTextTheme(context).labelMedium,  // Hint text style
-                //   ),
-                //   onChanged: (String? newValue) {
-                //     setState(() {
-                //       selectedLocation = newValue!;
-                //     });
-                //   },
-                //   items: [
-                //     DropdownMenuItem<String>(
-                //       enabled: false,
-                //       child: Padding(
-                //         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0),
-                //         child: TextField(
-                //           decoration: InputDecoration(
-                //             hintText: 'Select from List',
-                //             hintStyle: appTextTheme(context).labelMedium,
-                //             filled: true,
-                //             fillColor: Colors.white,
-                //             border: OutlineInputBorder(
-                //               borderRadius: BorderRadius.circular(15),
-                //             ),
-                //           ),
-                //           onChanged: (value) {
-                //             setState(() {
-                //               searchValue = value;
-                //             });
-                //           },
-                //         ),
-                //       ),
-                //     ),
-                //     ...locationList
-                //         .where((item) => item.toLowerCase().contains(searchValue.toLowerCase()))
-                //         .map((item) => DropdownMenuItem<String>(
-                //       value: item,
-                //       child: Padding(
-                //         padding: EdgeInsets.symmetric(horizontal: 14.0, vertical: 20.0),
-                //         child: Text(item,style: appTextTheme(context).labelMedium,),
-                //       ),
-                //     ))
-                //         .toList(),
-                //   ],
-                //   // Set the height of the dropdown and make it scrollable
-                //   selectedItemBuilder: (BuildContext context) {
-                //     return locationList
-                //         .map<Widget>((String item) {
-                //       return Text(
-                //         item,
-                //         style: appTextTheme(context).labelMedium,
-                //         overflow: TextOverflow.ellipsis,
-                //       );
-                //     }).toList();
-                //   },
-                // ),
-                SizedBox(height: 20),
-                Row(
-                  // mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Can\'t see your service?',
-                      style: appTextTheme(context).labelSmall,
-                    ),
-                    linkText(' New service', context, () {
-                      // Navigator.pushReplacementNamed(context, addManualService);
-                    }),
-                  ],
-                ),
-                SizedBox(height: 20),
-                AppButton(
-                  btnText: 'Add Service',
-                  textSize: 15,
-                  voidCallBack: () {
-                    addService();
-                    // Navigator.pushReplacementNamed(context, homePage);
-                  },
-                )
-              ],
+              ),
             ),
-          ),
+            Padding(
+              padding: const EdgeInsets.all(40.0),
+              child: Align(
+                alignment: Alignment.bottomRight,
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, homePage);
+                  },
+                  child: Text(
+                    'Skip',
+                    style: appTextTheme(context).labelMedium?.copyWith(color: AppColors.primaryColor),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
+
   }
 }

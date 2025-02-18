@@ -1,7 +1,6 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:saidika_ui/ui/theme/colors.dart';
 import 'package:saidika_ui/ui/widgets/appTextField.dart';
 import 'package:saidika_ui/ui/widgets/bottomNavigation.dart';
@@ -39,7 +38,7 @@ class _SearchState extends State<Search> {
 
   // Fetch service providers from API
   Future<void> getServiceProviders() async {
-    var url = Uri.parse('http://192.168.137.1:8080/api/v1/services/filter_by_location/$searchLocation');
+    var url = Uri.parse('https://saidika-backend.onrender.com/api/v1/services/filter_by_location/$searchLocation');
     print(url);
 
     final SharedPreferences sharedPreferences = await prefs;
@@ -63,7 +62,9 @@ class _SearchState extends State<Search> {
         // Filter providers based on the selected category after fetching data
         filterByCategory(selectedCategory ?? ''); // Ensure the filtering applies
       });
+
     }
+    print(providers);
   }
 
   @override
@@ -130,11 +131,18 @@ class _SearchState extends State<Search> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Column(
+        child: widget.data == null
+      ? Center(
+      child: SpinKitFadingCube(
+      color: AppColors.primaryColor,
+        size: 50.0,
+      ),
+    )
+        :Column(
           children: [
             // Search field
             Container(
-              padding: EdgeInsets.all(10),
+              padding: const EdgeInsets.all(10),
               child: Row(
                 children: [
                   Expanded(
@@ -153,12 +161,12 @@ class _SearchState extends State<Search> {
                 ],
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Expanded(
               child: RefreshIndicator(
                 onRefresh: _refreshAllData,
                 child: ListView(
-                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   children: [
                     // Services and location header
                     Row(
@@ -166,7 +174,7 @@ class _SearchState extends State<Search> {
                       children: [
                         Text(
                           StringsRes.services,
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                         ),
                         GestureDetector(
                           onTap: () async {
@@ -180,17 +188,17 @@ class _SearchState extends State<Search> {
                           },
                           child: Row(
                             children: [
-                              Text(searchLocation!, style: TextStyle(fontSize: 16)),
-                              SizedBox(width: 5),
-                              Icon(Icons.tune, size: 20),
-                              SizedBox(width: 5),
-                              Icon(Icons.location_on_outlined, size: 20),
+                              Text(searchLocation!, style: const TextStyle(fontSize: 16)),
+                              const SizedBox(width: 5),
+                              const Icon(Icons.tune, size: 20),
+                              const SizedBox(width: 5),
+                              const Icon(Icons.location_on_outlined, size: 20),
                             ],
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(height: 7),
+                    const SizedBox(height: 7),
                     // Categories list
                     SizedBox(
                       height: 32,
@@ -202,7 +210,7 @@ class _SearchState extends State<Search> {
                           return GestureDetector(
                             onTap: () => filterByCategory(category),
                             child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 2),
+                              padding: const EdgeInsets.symmetric(horizontal: 2),
                               child: Container(
                                 height: 32,
                                 width: 90,
@@ -218,16 +226,16 @@ class _SearchState extends State<Search> {
                         },
                       ),
                     ),
-                    SizedBox(height: 15),
+                    const SizedBox(height: 15),
                     // Providers list
                     ListView.builder(
                       shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
+                      physics: const NeverScrollableScrollPhysics(),
                       itemCount: filteredServiceProvider.length,
                       itemBuilder: (context, index) {
                         final provider = filteredServiceProvider[index];
                         return Padding(
-                          padding: EdgeInsets.symmetric(vertical: 5),
+                          padding: const EdgeInsets.symmetric(vertical: 5),
                           child: Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(10),
@@ -250,24 +258,24 @@ class _SearchState extends State<Search> {
                                         ),
                                       ),
                                       Padding(
-                                        padding: EdgeInsets.fromLTRB(4, 0, 0, 0),
+                                        padding: const EdgeInsets.fromLTRB(4, 0, 0, 0),
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               '${provider['provider']['first_name']} ${provider['provider']['last_name']}',
-                                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                                             ),
                                             Row(
                                               children: [
-                                                Icon(Icons.location_on_outlined, size: 13),
-                                                Text(provider['availableLocation'], style: TextStyle(fontSize: 12)),
-                                                SizedBox(width: 8),
-                                                Icon(Icons.star, size: 13),
-                                                Text(provider['average_rating'].toString(), style: TextStyle(fontSize: 12)),
+                                                const Icon(Icons.location_on_outlined, size: 13),
+                                                Text(provider['availableLocation'], style: const TextStyle(fontSize: 12)),
+                                                const SizedBox(width: 8),
+                                                const Icon(Icons.star, size: 13),
+                                                Text(provider['average_rating'].toString(), style: const TextStyle(fontSize: 12)),
                                               ],
                                             ),
-                                            Text(provider['name'], style: TextStyle(fontSize: 13)),
+                                            Text(provider['name'], style: const TextStyle(fontSize: 13)),
                                           ],
                                         ),
                                       )
@@ -294,15 +302,15 @@ class _SearchState extends State<Search> {
                                             },
                                           );
                                         },
-                                        child: Icon(Icons.message, color: Colors.grey, size: 30),
+                                        child: const Icon(Icons.message, color: Colors.grey, size: 30),
                                       ),
-                                      SizedBox(width: 8),
+                                      const SizedBox(width: 8),
                                       GestureDetector(
-                                        child: Icon(Icons.add_ic_call_rounded, color: Colors.grey, size: 30),
+                                        child: const Icon(Icons.add_ic_call_rounded, color: Colors.grey, size: 30),
                                         onTap: () async {
-                                          String providerPhone = '${provider['provider']['phone_number']}';
+                                          String providerPhone = '${provider['provider']['phone']}';
                                           print(providerPhone);
-                                          Uri phoneUrl = Uri(scheme: 'tel', path: '0115089122');
+                                          Uri phoneUrl = Uri(scheme: 'tel', path: providerPhone);
                                           if (await canLaunchUrl(phoneUrl)) {
                                             await launchUrl(phoneUrl);
                                           }

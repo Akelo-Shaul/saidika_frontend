@@ -1,8 +1,6 @@
 
 import 'dart:convert';
-import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:saidika_ui/ui/theme/colors.dart';
 
@@ -25,7 +23,7 @@ List<FocusNode> focusNodes = [
 var selectedValue = "FINDER";
 
 class SignInEmail extends StatefulWidget {
-  const SignInEmail({Key? key}) : super(key: key);
+  const SignInEmail({super.key});
 
   @override
   State<SignInEmail> createState() => _SignInEmailState();
@@ -61,12 +59,13 @@ class _SignInEmailState extends State<SignInEmail> {
 
   Future<void> createAccount() async{
 
-    var url;
+    Uri url = Uri.parse('');
+
     if (selectedValue == 'PROVIDER'){
-      url = Uri.parse('http://192.168.137.1:8080/api/v1/provider/login');
+      url = Uri.parse('https://saidika-backend.onrender.com/api/v1/provider/login');
       print(url);
     }else if (selectedValue == 'FINDER'){
-      url  = Uri.parse('http://192.168.137.1:8080/api/v1/finder/login');
+      url  = Uri.parse('https://saidika-backend.onrender.com/api/v1/finder/login');
       print(url);
     }
 
@@ -92,6 +91,7 @@ class _SignInEmailState extends State<SignInEmail> {
     print(response.body);
 
     if (response.statusCode == 200 || response.statusCode == 201) {
+
       // Extract cookie from response headers
       // String? rawCookie = response.headers['set-cookie'];
       var responseBody = jsonDecode(response.body);
@@ -100,6 +100,11 @@ class _SignInEmailState extends State<SignInEmail> {
       String authorizationToken = responseBody['authorization'];
       String userId = responseBody['profile_id'];
       String userName = responseBody['profile_name'];
+      bool firstTimeLogin = responseBody['first_time_login'];
+      String role = selectedValue.toString();
+
+      //TODO: Get location from cookie
+      // String userLocation = responseBody['location'];
 
       // print(authorizationToken);
 
@@ -108,9 +113,13 @@ class _SignInEmailState extends State<SignInEmail> {
       await prefs.setString('userToken', authorizationToken);
       await prefs.setString('userId', userId);
       await prefs.setString('userName', userName);
+      await prefs.setBool('first_time_login', firstTimeLogin);
+      await prefs.setString('userRole', role);
+      // await prefs.setString('userLocation', userLocation);
 
       print('Log In Success');
       // print(userName);
+
 
       if (selectedValue == 'PROVIDER' && responseBody['first_time_login']){
         Navigator.pushReplacementNamed(context, addService);
@@ -127,9 +136,9 @@ class _SignInEmailState extends State<SignInEmail> {
       appBar: appBar(context, "Fill your profile"),
       body: SingleChildScrollView(
           scrollDirection: Axis.vertical,
-          physics: BouncingScrollPhysics(),
+          physics: const BouncingScrollPhysics(),
           child: Padding(
-            padding: EdgeInsetsDirectional.all(20),
+            padding: const EdgeInsetsDirectional.all(20),
             child: Column(
               children: [
                 ClipRRect(
@@ -141,9 +150,9 @@ class _SignInEmailState extends State<SignInEmail> {
                     imgWidth: 130,
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 DropdownButtonFormField(
-                  borderRadius: BorderRadius.all(Radius.circular(15)),
+                  borderRadius: const BorderRadius.all(Radius.circular(15)),
                   decoration: InputDecoration(
                     prefixIcon: selectedValue == "FINDER"
                         ? Icon(Icons.search, color: AppColors.textColorLight)
@@ -166,7 +175,7 @@ class _SignInEmailState extends State<SignInEmail> {
                   },
                   items: dropdownItems,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 AppTextField(
                   textFieldCallBack: onFocusChanged,
                   hintText: 'Email',
@@ -184,7 +193,7 @@ class _SignInEmailState extends State<SignInEmail> {
                   isPasswordField: true,
                   keyboardType: TextInputType.visiblePassword,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 AppButton(
                   btnText: 'Log In',
                   textSize: 15,

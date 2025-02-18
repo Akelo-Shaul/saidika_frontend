@@ -1,12 +1,19 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'dart:typed_data';
 import 'package:saidika_ui/ui/theme/colors.dart';
 import 'package:saidika_ui/ui/widgets/bottomNavigation.dart';
 import 'package:saidika_ui/ui/widgets/imageAsset.dart';
 import 'package:saidika_ui/utils/StringsRes.dart';
+import 'package:saidika_ui/utils/cache_profile_image.dart';
 import 'package:saidika_ui/utils/constants.dart';
 import 'package:saidika_ui/utils/route.dart';
 import 'package:saidika_ui/utils/service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
+
+import 'package:http/http.dart' as http;
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -14,6 +21,9 @@ class HomePage extends StatefulWidget {
   @override
   State<HomePage> createState() => _HomePageState();
 }
+
+final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
 
 class _HomePageState extends State<HomePage> {
   //The home Top picks and services display
@@ -31,11 +41,27 @@ class _HomePageState extends State<HomePage> {
     Service(name: 'Cobler', description: 'shoes repair', imageUrl: '${imagePath}service_images/cobler.jpg', appearanceInDB: 0),
   ];
 
+  final List<Map<String, dynamic>> notifications = [
+    {
+      'icon': Icons.notifications,
+      'title': 'New message received',
+      'subtitle': 'You have a new message.',
+    },
+    {
+      'icon': Icons.notifications,
+      'title': 'ALoha',
+      'subtitle': 'Another message.',
+    },
+    // Additional notification objects here...
+  ];
+
   String currentSelectedPage = '';
 
   //TODO: Hande this with cookies
   bool isLoggedIn = false;
   //TODO: Get from user logged in profile
+  //currentLocation declaration
+  String? currentLocation;
 
   Future<SharedPreferences> prefs = SharedPreferences.getInstance();
 
@@ -46,11 +72,37 @@ class _HomePageState extends State<HomePage> {
     return input[0].toUpperCase() + input.substring(1).toLowerCase();
   }
 
+  Uint8List? imageBytes;
+  File? profileImage;
+
+  Future<void> getProfileImage() async {
+    var directory = await getApplicationDocumentsDirectory();
+    profileImage = File('${directory.path}/profileImage');
+    setState(() {});  // Update the state once directory is initialized
+  }
+
+  Future<void> getProfile() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+
+
+    var profileUrl = Uri.parse('https://saidika-backend.onrender.com/api/v1/provider/getpp');
+
+    var profileImageResponse = await http.get(
+        profileUrl,
+        headers: {
+          "Authorization": prefs.getString('userToken').toString()
+        }
+    );
+
+    imageBytes = profileImageResponse.bodyBytes;
+  }
   Future<void> makeAuthorizedRequest() async {
     final SharedPreferences sharedPreferences = await prefs;
 
     String? userToken = sharedPreferences.getString('userToken');
     String? userName = sharedPreferences.getString('userName');
+    String? userLocation = sharedPreferences.getString('userLocation');
 
     setState(() {
       print(userName);
@@ -65,6 +117,10 @@ class _HomePageState extends State<HomePage> {
             : 'Hi, There!';
       }
 
+      if (userLocation != null && userLocation.isNotEmpty) {
+        currentLocation = userLocation.toString();
+      }
+
       // print(currentSelectedPage);
     });
 
@@ -72,14 +128,49 @@ class _HomePageState extends State<HomePage> {
 
   }
 
+  Future<void> getLocation() async{
+    final SharedPreferences sharedPreferences = await prefs;
+
+    //TODO: Get Location from current session
+  }
+
+  Future<void> navigateToAddService() async {
+    final SharedPreferences sharedPreferences = await prefs;
+
+    // Ensure SharedPreferences is ready before checking the value
+    bool? firstTimeLogin = sharedPreferences.getBool('first_time_login') ?? false;
+
+    // Check the value of first_time_login and navigate if true
+    if (firstTimeLogin) {
+      print('Navigate to addService Page');
+      // Clear the flag after first navigation (optional, if you don't want repeated navigation)
+      sharedPreferences.setBool('first_time_login', false);
+
+      // Navigate to the addService page
+      Navigator.pushNamed(context, addService);
+    } else {
+      print('First time login is not set, or already navigated.');
+    }
+  }
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
+    getProfile();
     sortByAppearance();
-
+    navigateToAddService();
     makeAuthorizedRequest();
-
+    downloadAndSaveImage('https://saidika-backend.onrender.com/api/v1/provider/getpp', 'profileImage').then((file) {
+      // Use the file, e.g., display it
+      print('Image saved at: ${file.path}');
+      setState(() {
+        imageCache.clear();
+        imageCache.clearLiveImages();
+      });
+    }).catchError((e) {
+      print('Failed to download and save image: $e');
+    });
+    getProfileImage();
   }
 
   void sortByAppearance(){
@@ -113,8 +204,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  //currentLocation declaration
-  String? currentLocation;
+
 
   @override
   Widget build(BuildContext context) {
@@ -125,6 +215,51 @@ class _HomePageState extends State<HomePage> {
 
     return SafeArea(
       child: Scaffold(
+        key: _scaffoldKey,
+        endDrawer: Drawer(
+          child: SafeArea(
+            child: Column(
+              children: [
+                ListTile(
+                  title: const Text('Notifications', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ),
+                const Divider(),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: notifications.length,
+                    itemBuilder: (context, index) {
+                      final notification = notifications[index];
+                      return Column(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: Colors.grey, width: 1),
+                            ),
+                            child: ListTile(
+                              leading: Icon(notification['icon']),
+                              title: Text(notification['title']),
+                              subtitle: Text(notification['subtitle']),
+                            ),
+                          ),
+                          // Add a divider after each ListTile except the last one.
+                          // if (index < notifications.length - 1) const Divider(),
+                        ],
+                      );
+                    },
+                  ),
+                )
+              ],
+            ),
+          ),
+        ),
+
         body: Column(
           children: [
             Expanded(
@@ -142,14 +277,20 @@ class _HomePageState extends State<HomePage> {
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(100),
-                                child: imageAsset(
-                                  isNormalImage: true,
-                                  fileName: 'profile.jpg',
-                                  imgHeight: 45,
-                                  imgWidth: 45,
-                                ),
+                                child: profileImage != null ?
+                                SizedBox(
+                                  height: 45,
+                                  width: 45,
+                                  child: Image.file(File(profileImage!.path), fit: BoxFit.cover), // Use fit to avoid overflow
+                                ) :
+                                imageAsset(
+                                    isNormalImage: true,
+                                    fileName: 'profile.jpg',
+                                    imgHeight: 45,
+                                    imgWidth: 45,
+                                  )
                               ),
-                              SizedBox(width: 10),
+                              const SizedBox(width: 10),
                               Text(
                                 currentSelectedPage,
                                 style: appTextTheme(context)
@@ -160,10 +301,15 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ],
                           ),
-                          Icon(Icons.notifications_active),
+                           IconButton(
+                            icon: const Icon(Icons.notifications_active),
+                            onPressed: () {
+                              _scaffoldKey.currentState?.openEndDrawer();
+                            },
+                          ),
                         ],
                       ),
-                      SizedBox(height: 15),
+                      const SizedBox(height: 15),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -174,7 +320,7 @@ class _HomePageState extends State<HomePage> {
                                 // ?.copyWith(fontWeight: FontWeight.bold
                             // ),
                           ),
-                          Container(
+                          SizedBox(
                             height: 25,
                             child: TextButton(
                               onPressed: () async{
@@ -201,7 +347,7 @@ class _HomePageState extends State<HomePage> {
                                         ?.copyWith(fontWeight: FontWeight.bold,color: AppColors.orange
                                     ),
                                   ),
-                                  SizedBox(width: 8.0),
+                                  const SizedBox(width: 8.0),
                                   Icon(
                                     Icons.keyboard_arrow_down,
                                     size: 25,
@@ -212,7 +358,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ],
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       Column(
                         children: [
                           Row(
@@ -233,7 +379,7 @@ class _HomePageState extends State<HomePage> {
                               // ),
                             ],
                           ),
-                          SizedBox(height: 6),
+                          const SizedBox(height: 6),
                           SizedBox(
                             height: 105.0, // Set the height for the ListView
                             child: ListView.builder(
@@ -250,20 +396,6 @@ class _HomePageState extends State<HomePage> {
                                     width: 100,
                                     // Fixed width for each item
                                     margin: const EdgeInsets.only(right: 8.0),
-                                    // Space between items
-                                    child: Align(
-                                      alignment: Alignment.bottomLeft,
-                                      child: Padding(
-                                        padding: const EdgeInsets.fromLTRB(
-                                            8, 0, 0, 3),
-                                        child: Text(
-                                          service.name,
-                                          style: TextStyle(
-                                            color: Colors.orange,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
                                     decoration: BoxDecoration(
                                       image: DecorationImage(
                                         image: AssetImage(service.imageUrl),
@@ -275,13 +407,27 @@ class _HomePageState extends State<HomePage> {
                                         width: 2.0,
                                       ),
                                     ),
+                                    // Space between items
+                                    child: Align(
+                                      alignment: Alignment.bottomLeft,
+                                      child: Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            8, 0, 0, 3),
+                                        child: Text(
+                                          service.name,
+                                          style: const TextStyle(
+                                            color: Colors.orange,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 );
                               },
                             ),
                           ),
 
-                          SizedBox(height: 15),
+                          const SizedBox(height: 15),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -292,13 +438,13 @@ class _HomePageState extends State<HomePage> {
                                     ?.copyWith(fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              SizedBox(height: 4,),
+                              const SizedBox(height: 4,),
                               Container(// Set the height for the ListView
                                 // height: 900,
                                 child: GridView.builder(
                                   shrinkWrap: true,
-                                  physics: NeverScrollableScrollPhysics(),
-                                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount: 2,
                                     childAspectRatio: 1,
                                     crossAxisSpacing: 0,
@@ -313,19 +459,7 @@ class _HomePageState extends State<HomePage> {
                                       },
                                       child: Container(
                                         width: 100, // Fixed width for each item
-                                        margin: const EdgeInsets.only(right: 8.0), // Space between items
-                                        child: Align(
-                                          alignment: Alignment.bottomLeft,
-                                          child: Padding(
-                                            padding: const EdgeInsets.fromLTRB(8, 0, 0, 3),
-                                            child: Text(
-                                              service.name,
-                                              style: TextStyle(
-                                                color: Colors.orange,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
+                                        margin: const EdgeInsets.only(right: 8.0),
                                         decoration: BoxDecoration(
                                           image: DecorationImage(
                                             image: AssetImage(service.imageUrl), // Use the correct image path variable
@@ -335,6 +469,18 @@ class _HomePageState extends State<HomePage> {
                                           border: Border.all(
                                             color: Colors.grey,
                                             width: 2.0,
+                                          ),
+                                        ), // Space between items
+                                        child: Align(
+                                          alignment: Alignment.bottomLeft,
+                                          child: Padding(
+                                            padding: const EdgeInsets.fromLTRB(8, 0, 0, 3),
+                                            child: Text(
+                                              service.name,
+                                              style: const TextStyle(
+                                                color: Colors.orange,
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ),

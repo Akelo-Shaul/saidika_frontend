@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "353858735098",
+    "project_id": "fir-push-notifs-45d01",
+    "storage_bucket": "fir-push-notifs-45d01.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:353858735098:android:e54d6ba464f2ee78e5f243",
+        "android_client_info": {
+          "package_name": "com.example.firebase_popup_notif"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCiAb6_hhjpFq1mOq-yr0B8W62udCsSZFM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:353858735098:android:9959321a0077b56ce5f243",
+        "android_client_info": {
+          "package_name": "com.saidika.saidika_ui"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCiAb6_hhjpFq1mOq-yr0B8W62udCsSZFM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

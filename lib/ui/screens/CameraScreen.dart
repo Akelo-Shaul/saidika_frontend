@@ -14,6 +14,7 @@ class _CameraScreenState extends State<CameraScreen> {
   List<CameraDescription>? cameras;
   bool isRearCamera = true;
   XFile? imageFile;
+  final ImagePicker imagePicker = ImagePicker();
 
 
   @override
@@ -55,24 +56,33 @@ class _CameraScreenState extends State<CameraScreen> {
   Future<void> capturePhoto() async{
     if(_cameraController != null && _cameraController!.value.isInitialized){
       imageFile = await _cameraController!.takePicture();
-      print(imageFile);
+      // print(imageFile);
       setState(() {});
+      print('The IMaGe PatH');
+      print(imageFile!.path);
+      Navigator.pop(context,imageFile);
     }
   }
 
   Future<void> pickGalleryImage() async{
-    final ImagePicker imagePicker = ImagePicker();
+    print('Image Picker Start');
     XFile? pickedFile = await imagePicker.pickImage(source: ImageSource.gallery);
     if(pickedFile != null){
+
       setState(() {
         imageFile = pickedFile;
       });
+      Navigator.pop(context, pickedFile);
+      print('ROuting HOOME');
+      print(pickedFile);
     }
   }
 
   @override
   void dispose() {
     _cameraController!.dispose();
+    imageFile = null;
+    // imagePicker;
     super.dispose();
   }
 
@@ -88,52 +98,27 @@ class _CameraScreenState extends State<CameraScreen> {
               child: _cameraController != null &&
                   _cameraController!.value.isInitialized
                   ? CameraPreview(_cameraController!)
-                  : Center(child: CircularProgressIndicator()),
+                  : const Center(child: CircularProgressIndicator()),
             ),
             // Bottom section with gallery and camera controls
             Expanded(
-              flex: 2,
+              flex: 1,
               child: Container(
                 color: Colors.black,
-                child: Column(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    // Gallery preview at the bottom
-                    Container(
-                      height: 100,
-                      padding: EdgeInsets.symmetric(horizontal: 8),
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: 5, // Replace with actual gallery items
-                        itemBuilder: (context, index) {
-                          return GestureDetector(
-                            onTap: pickGalleryImage, // To pick an image
-                            child: Container(
-                              margin: EdgeInsets.symmetric(horizontal: 4),
-                              width: 80,
-                              color: Colors.grey, // Temporary placeholder
-                              child: Icon(Icons.photo, size: 40),
-                            ),
-                          );
-                        },
-                      ),
+                    IconButton(
+                      icon: const Icon(Icons.image, color: Colors.white,size: 35,),
+                      onPressed: pickGalleryImage, // Open gallery picker
                     ),
-                    // Camera control buttons
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.image, color: Colors.white),
-                          onPressed: pickGalleryImage, // Open gallery picker
-                        ),
-                        GestureDetector(
-                          onTap: capturePhoto, // Capture photo
-                          child: Icon(Icons.circle, size: 70, color: Colors.white),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.switch_camera, color: Colors.white),
-                          onPressed: switchCamera, // Switch camera
-                        ),
-                      ],
+                    GestureDetector(
+                      onTap: capturePhoto, // Capture photo
+                      child: const Icon(Icons.circle, size: 80, color: Colors.white),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.switch_camera, color: Colors.white,size: 35,),
+                      onPressed: switchCamera, // Switch camera
                     ),
                   ],
                 ),

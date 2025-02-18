@@ -1,5 +1,4 @@
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:saidika_ui/ui/theme/colors.dart';
 import 'package:saidika_ui/ui/widgets/linkText.dart';
@@ -8,24 +7,24 @@ import 'package:saidika_ui/utils/constants.dart';
 import 'package:saidika_ui/utils/route.dart';
 
 class SignInScreen extends StatelessWidget {
-  const SignInScreen({Key? key}) : super(key: key);
+  const SignInScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
-        physics: BouncingScrollPhysics(),
+        physics: const BouncingScrollPhysics(),
         scrollDirection: Axis.vertical,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(height: 100),
+            const SizedBox(height: 100),
             Text(
               'Let\'s you in!',
               style: appTextTheme(context).titleLarge,
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             SocialMediaButton(
                 text: "Continue with Email", fileName: "email.svg",
               onPressed: () {
@@ -39,7 +38,7 @@ class SignInScreen extends StatelessWidget {
                 }
             ),
 
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

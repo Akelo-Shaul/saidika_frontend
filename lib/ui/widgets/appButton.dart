@@ -9,7 +9,7 @@ class AppButton extends StatelessWidget {
   VoidCallback? voidCallBack;
 
   AppButton(
-      {Key? key,
+      {super.key,
       required this.btnText,
       this.backgroundColor,
       this.textColor,
@@ -17,8 +17,7 @@ class AppButton extends StatelessWidget {
       this.textSize,
       this.height,
       this.width,
-      this.voidCallBack})
-      : super(key: key);
+      this.voidCallBack});
 
   @override
   Widget build(BuildContext context) {
@@ -27,19 +26,19 @@ class AppButton extends StatelessWidget {
       width: width,
       decoration: BoxDecoration(
         color: backgroundColor ?? AppColors.primaryColor,
-        borderRadius: BorderRadius.all(Radius.circular(10)),
+        borderRadius: const BorderRadius.all(Radius.circular(10)),
       ),
       child: Material(
         color: backgroundColor ?? AppColors.primaryColor,
-        borderRadius: BorderRadius.all(Radius.circular(10)),
+        borderRadius: const BorderRadius.all(Radius.circular(10)),
         child: InkWell(
           onTap: voidCallBack,
           highlightColor: AppColors.white.withOpacity(0.4),
           splashColor: AppColors.white.withOpacity(0.1),
-          borderRadius: BorderRadius.all(Radius.circular(10)),
+          borderRadius: const BorderRadius.all(Radius.circular(10)),
           child: Center(
               child: Padding(
-            padding: EdgeInsetsDirectional.only(top: 15, bottom: 15),
+            padding: const EdgeInsetsDirectional.only(top: 15, bottom: 15),
             child: Text(
               btnText,
               style: appTextTheme(context).labelSmall?.copyWith(

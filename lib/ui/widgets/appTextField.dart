@@ -1,9 +1,68 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:saidika_ui/ui/theme/colors.dart';
 import 'package:saidika_ui/utils/constants.dart';
 
 class AppTextField extends StatelessWidget {
+  String hintText;
+  IconData? prefixIcon;
+  VoidCallback? textFieldCallBack;
+  bool? isPasswordField, isEnabled, autoFocus;
+  Function(String)? onChanged;
+  FocusNode focusNode;
+  TextInputType? keyboardType;
+  TextEditingController controller;
+
+  AppTextField({
+    super.key,
+    required this.hintText,
+    this.prefixIcon,
+    required this.focusNode,
+    required this.controller,
+    this.isPasswordField,
+    this.onChanged,
+    this.textFieldCallBack,
+    this.keyboardType,
+    this.isEnabled,
+    this.autoFocus,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsetsDirectional.only(bottom: 20),
+      child: TextField(
+          enabled: isEnabled ?? true,
+          autofocus: autoFocus ?? false,
+          controller: controller,
+          style: appTextTheme(context).labelSmall,
+          onTap: textFieldCallBack,
+          onChanged: onChanged,
+          obscureText: isPasswordField ?? false,
+          focusNode: focusNode,
+          keyboardType: keyboardType ?? TextInputType.text,
+          decoration: InputDecoration(
+            hintText: hintText,
+            focusedBorder: focusedOutlineInputBorder(),
+            enabledBorder: enabledOutlineInputBorder(),
+            disabledBorder: enabledOutlineInputBorder(),
+            prefixIcon: prefixIcon != null
+                ? Icon(
+                    prefixIcon,
+                    color: focusNode.hasFocus
+                        ? AppColors.primaryColor
+                        : AppColors.textColorLight,
+                    size: 25,
+                  ) : null,
+            filled: true,
+            fillColor: focusNode.hasFocus
+                ? AppColors.primaryLightColor
+                : AppColors.grey,
+          )),
+    );
+  }
+}
+
+class AppTextFieldNoMargin extends StatelessWidget {
   String hintText;
   IconData prefixIcon;
   VoidCallback? textFieldCallBack;
@@ -13,8 +72,8 @@ class AppTextField extends StatelessWidget {
   TextInputType? keyboardType;
   TextEditingController controller;
 
-  AppTextField({
-    Key? key,
+  AppTextFieldNoMargin({
+    super.key,
     required this.hintText,
     required this.prefixIcon,
     required this.focusNode,
@@ -25,12 +84,12 @@ class AppTextField extends StatelessWidget {
     this.keyboardType,
     this.isEnabled,
     this.autoFocus,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsetsDirectional.only(bottom: 20),
+      margin: const EdgeInsetsDirectional.only(bottom: 20),
       child: TextField(
           enabled: isEnabled ?? true,
           autofocus: autoFocus ?? false,
@@ -71,7 +130,7 @@ class AppTextFieldWithSuffixIcon extends StatelessWidget {
   TextEditingController controller;
 
   AppTextFieldWithSuffixIcon({
-    Key? key,
+    super.key,
     required this.hintText,
     required this.prefixIcon,
     required this.focusNode,
@@ -83,12 +142,12 @@ class AppTextFieldWithSuffixIcon extends StatelessWidget {
     this.keyboardType,
     this.isEnabled,
     this.autoFocus,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsetsDirectional.only(bottom: 20),
+      margin: const EdgeInsetsDirectional.only(bottom: 20),
       child: TextField(
           enabled: isEnabled ?? true,
           autofocus: autoFocus ?? false,
@@ -134,7 +193,7 @@ class AppTextArea extends StatelessWidget {
   VoidCallback? onTap;
 
   AppTextArea({
-    Key? key,
+    super.key,
     required this.hintText,
     required this.controller,
     required this.focusNode,
@@ -143,12 +202,12 @@ class AppTextArea extends StatelessWidget {
     this.autoFocus,
     this.onChanged,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsetsDirectional.only(bottom: 20),
+      margin: const EdgeInsetsDirectional.only(bottom: 20),
       child: TextField(
         enabled: isEnabled ?? true,
         autofocus: autoFocus ?? false,
@@ -175,7 +234,7 @@ class AppTextArea extends StatelessWidget {
                   : AppColors.textColorLight,
               size: 25),
           disabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey),
+            borderSide: const BorderSide(color: Colors.grey),
             borderRadius: BorderRadius.circular(15),
           ),
           filled: true,
@@ -196,7 +255,7 @@ focusedOutlineInputBorder() {
 
 enabledOutlineInputBorder() {
   return OutlineInputBorder(
-    borderSide: BorderSide(color: Colors.transparent),
+    borderSide: const BorderSide(color: Colors.transparent),
     borderRadius: BorderRadius.circular(15),
   );
 }

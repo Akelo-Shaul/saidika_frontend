@@ -1,5 +1,4 @@
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:saidika_ui/utils/constants.dart';
 
@@ -11,7 +10,7 @@ AppBar appBar(BuildContext context, String title, {TextStyle? titleStyle}) {
       onPressed: () {
         Navigator.pop(context);
       },
-      icon: Icon(Icons.arrow_back_ios),
+      icon: const Icon(Icons.arrow_back_ios),
       splashRadius: 1,
     ),
     title: Text(
@@ -30,7 +29,7 @@ AppBar appBarWithActions(
       onPressed: () {
         Navigator.pop(context);
       },
-      icon: Icon(Icons.arrow_back_ios),
+      icon: const Icon(Icons.arrow_back_ios),
       splashRadius: 1,
     ),
     title: Text(

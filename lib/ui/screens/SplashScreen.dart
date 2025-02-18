@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:saidika_ui/ui/screens/introSliderScreen.dart';
 import 'package:saidika_ui/ui/widgets/imageAsset.dart';
 import 'package:saidika_ui/utils/route.dart';
 
@@ -23,7 +22,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   _navigateToOnboarding() async{
-    await Future.delayed(Duration(seconds: 2), (){
+    await Future.delayed(const Duration(seconds: 2), (){
       Navigator.pushReplacementNamed(context, introSliderScreen);
     });
   }

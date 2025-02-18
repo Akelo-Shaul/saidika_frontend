@@ -8,12 +8,12 @@ class imageAsset extends StatelessWidget {
   bool isNormalImage;
 
   imageAsset({
-    Key? key,
+    super.key,
     required this.fileName,
     this.imgHeight,
     this.imgWidth,
     required this.isNormalImage,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
