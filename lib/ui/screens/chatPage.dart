@@ -64,18 +64,22 @@ class _ChatPageState extends State<ChatPage> {
     final SharedPreferences sharedPreferences = await prefs;
     String? userToken = sharedPreferences.getString('userToken');
     String? userId = sharedPreferences.getString('userId');
-    String? notifsToken = sharedPreferences.getString("notifsToken");
+    String? notifsToken;
     String? userName = sharedPreferences.getString('userName');
 
     var url = Uri.parse('https://saidika-backend.onrender.com/api/v1/messages/sendMessage/$chatReceiverId');
     print(url);
 
-    // Map<String, dynamic> message = {
-    //   "text": messageController.text,
-    // };
-
-    // print("Message object: $message");
-    // print(userToken);
+    var notifUrl = Uri.parse('https://saidika-backend.onrender.com/getNotificationToken?ReceiverID=$chatReceiverId');
+    print('Notification URL $notifUrl');
+    var notifRequest = await http.get(
+      notifUrl,
+      headers: {
+        "Authorization": sharedPreferences.getString('userToken').toString()
+      },
+    );
+    notifsToken = jsonDecode(notifRequest.body);
+    print(notifsToken);
 
     var headers = {
       "Content-Type": "application/json",
@@ -102,7 +106,6 @@ class _ChatPageState extends State<ChatPage> {
       "title": "$userName",
       "body": "$trimmedText",
       "topic":"I wish I knew",
-      // TODO: GEt actual user notification
       "token": '$notifsToken'
     };
 
@@ -121,21 +124,12 @@ class _ChatPageState extends State<ChatPage> {
         },
         body: jsonEncode(notif)
       );
+
+      print(request.body);
     }
     else {
       print(response.reasonPhrase);
     }
-
-    // var response = await http.post(
-    //     url,
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       "Authorization": '$userToken'
-    //     },
-    //     body: json.encode(msg_model)
-    // );
-
-    // print('Response body ${response.body}');
 
     messageController.clear();
     getAllMessages();

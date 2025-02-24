@@ -59,6 +59,7 @@ class _SignUpManuallyScreenState extends State<SignUpManuallyScreen> {
   int? messageCode;
   String emailMessage = '';
   int? emailStatusCode;
+  String? token;
 
   XFile? _selectedImage;
 
@@ -127,6 +128,8 @@ class _SignUpManuallyScreenState extends State<SignUpManuallyScreen> {
 
   Future<void> createAccount() async{
 
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
     Uri url = Uri.parse('');
     if (selectedValue == 'PROVIDER') {
       url = Uri.parse('https://saidika-backend.onrender.com/api/v1/provider/register');
@@ -136,6 +139,9 @@ class _SignUpManuallyScreenState extends State<SignUpManuallyScreen> {
       print(url);
     }
 
+
+    String? notifsToken = prefs.getString('notifToken');
+    print(notifsToken);
 
     // Create a multipart request
     var request = http.MultipartRequest('POST', url);
@@ -150,8 +156,10 @@ class _SignUpManuallyScreenState extends State<SignUpManuallyScreen> {
       "role": selectedValue,
       "location": selectedLocation,
       'confirmPassword': confirmPasswordController.text,
-      "password": passwordController.text
+      "password": passwordController.text,
+      "notifTok": '$notifsToken'
     });
+    print(request.fields);
 
     // Add the profile picture file
     if (_selectedImage != null) {
@@ -297,21 +305,29 @@ class _SignUpManuallyScreenState extends State<SignUpManuallyScreen> {
     });
   }
 
-  @override
-  void initState() async{
-    super.initState();
-
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    setupFirebaseNotifications();
-    messaging = FirebaseMessaging.instance;
-
-    messaging.getToken().then((value) async {
-      if (value != null) {
-        await prefs.setString("notifToken", value);
-      }
-    });
-  }
+  // void _initializeNotifications() async {
+  //   final SharedPreferences prefs = await SharedPreferences.getInstance();
+  //
+  //   await setupFirebaseNotifications(); // This is a Future, so we await it inside this function.
+  //   messaging = FirebaseMessaging.instance;
+  //
+  //   messaging.getToken().then((value) async {
+  //     if (value != null) {
+  //       await prefs.setString("notifToken", value);
+  //       setState(){
+  //         token = value;
+  //       }
+  //       print('FCM $token');
+  //     }
+  //   });
+  // }
+  //
+  // @override
+  // void initState() {
+  //   super.initState();
+  //
+  //   _initializeNotifications();
+  // }
 
 
   @override

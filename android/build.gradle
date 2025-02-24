@@ -16,6 +16,7 @@ buildscript {
         // Add this line inside the dependencies block
         classpath 'com.android.tools.build:gradle:7.0.4'  // or whichever version is appropriate
         classpath 'com.google.gms:google-services:4.4.2'  // Correct place for google-services
+        classpath 'org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version'
     }
 }
 

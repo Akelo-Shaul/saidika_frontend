@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'dart:typed_data';
 import 'package:saidika_ui/ui/theme/colors.dart';
@@ -152,10 +154,43 @@ class _HomePageState extends State<HomePage> {
       print('First time login is not set, or already navigated.');
     }
   }
+  Future<void> getAndUpdateNotifToken() async {
+    final SharedPreferences sharedPreferences = await prefs;
+    String? notifToken = sharedPreferences.getString('notifToken');
+    String? userId = sharedPreferences.getString('userId');
+
+    print('User Id $userId');
+
+    var notifUrl = Uri.parse(
+        'https://saidika-backend.onrender.com/getNotificationToken?ReceiverID=$userId');
+    print('Notification URL $notifUrl');
+    var notifRequest = await http.get(
+        notifUrl,
+        headers: {
+          "Authorization": sharedPreferences.getString('userToken').toString()
+        },
+    );
+    print('Notification from db ${notifRequest.body}');
+    var dbNotifToken = jsonDecode(notifRequest.body);
+    if (dbNotifToken != notifToken) {
+      var updateTokenUrl = Uri.parse('https://saidika-backend.onrender.com/api/v1/provider/updatetoken');
+      var response = await http.post(
+        updateTokenUrl,
+        headers: {
+          "Authorization": sharedPreferences.getString('userToken').toString()
+        },
+        body: jsonEncode(notifToken)
+      );
+
+      print(response.body);
+    }
+    print('Notification Token $notifToken');
+  }
 
   @override
   void initState(){
     super.initState();
+    getAndUpdateNotifToken();
     getProfile();
     sortByAppearance();
     navigateToAddService();
